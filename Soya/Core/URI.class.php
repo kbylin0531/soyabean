@@ -110,6 +110,7 @@ class URI extends \Soya{
             //普通模式下解析URI地址
             $this->parseInCommon($uri);
         }
+//        self::trace($this->result);
         return $this->result;
     } 
 
@@ -157,6 +158,7 @@ class URI extends \Soya{
             'pkv'  => $config['PKV_BRIDGE'],
         ];
         $this->stripMasqueradeTail($uri);
+
         \Soya::recordStatus('parseurl_in_pathinfo_getpathinfo_done');
         //-- 解析PATHINFO --//
         //截取参数段param与定位段local
@@ -182,6 +184,7 @@ class URI extends \Soya{
         //URL中解析结果合并到$_GET中，$_GET的其他参数不能和之前的一样，否则会被解析结果覆盖
         SEK::merge($_GET,$this->result['p']);
 
+//        self::trace($uri,$this->result);
         //注意到$_GET和$_REQUEST并不同步，当动态添加元素到$_GET中后，$_REQUEST中不会自动添加
         \Soya::recordStatus('parseurl_in_common_end');
     }

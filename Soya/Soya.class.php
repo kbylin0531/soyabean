@@ -163,6 +163,7 @@ class Soya {
      * @param $action
      */
     final public static function dispatch($modules,$ctrler,$action){
+//        \Soya\dumpout($modules,$ctrler,$action);
         $result = Dispatcher::getInstance(SINGLE_INSTANCE)->fetch($modules,$ctrler,$action)->exec();
         return $result;
     }
@@ -412,7 +413,7 @@ class Soya {
 //                    'LastSQL'       => Model::getLastSql(),
 //                    'LastInputs'    => Model::getLastInputs(),
                 ],
-                'Trace'         => self::$_status,
+                'Trace'         => self::$_traces,
                 'Files'         => array_merge(['Total'=>count($info)],$info),
                 'Status'        => $cmprst,
                 'GET'           => $_GET,

@@ -750,7 +750,7 @@ class Model {
      * 主键名称
      * @var string|array
      */
-    protected $pk = null;
+    protected $pk = 'id';
 
     /**
      * 获取主键名称

@@ -36,7 +36,7 @@ final class SEK {
      * 配置类型
      * 值使用字符串而不是效率更高的数字是处于可以直接匹配后缀名的考虑
      */
-    const CONF_TYPE_php     = 'php';
+    const CONF_TYPE_PHP     = 'php';
     const CONF_TYPE_INI     = 'ini';
     const CONF_TYPE_YAML    = 'yaml';
     const CONF_TYPE_XML     = 'xml';
@@ -110,9 +110,9 @@ final class SEK {
      */
     public static function toModulesString($modules,$mmb='/'){
         if(is_array($modules)){
-            foreach($modules as &$modulename){
-                $modulename = StringHelper::toCStyle($modulename);
-            }
+//            foreach($modules as &$modulename){
+//                $modulename = StringHelper::toCStyle($modulename);
+//            }
             $modules = implode($mmb,$modules);
         }
         is_string($modules) or Exception::throwing('Invalid Parameters!');
@@ -271,9 +271,37 @@ final class SEK {
     public static function arrayRecursiveWalk(array $array, callable $filter) {
         $result = [];
         foreach ($array as $key => $val) {
-            $result[$key] = is_array($val) ? self::arrayRecursiveWalk($filter, $val) : call_user_func($filter, $val);
+            $result[$key] = is_array($val) ? self::arrayRecursiveWalk($val,$filter) : call_user_func($filter, $val);
         }
         return $result;
     }
-
+    
+    /**
+     * 加载配置文件 支持格式转换 仅支持一级配置
+     * @param string $file 配置文件名
+     * @param callable $parser 配置解析方法 有些格式需要用户自己解析
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function parseConfigFile($file,callable $parser=null){
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        switch ($ext) {
+            case self::CONF_TYPE_PHP:
+                return include $file;
+            case self::CONF_TYPE_INI:
+                return parse_ini_file($file);
+            case self::CONF_TYPE_YAML:
+                return yaml_parse_file($file);
+            case self::CONF_TYPE_XML:
+                return (array)simplexml_load_file($file);
+            case self::CONF_TYPE_JSON:
+                return json_decode(file_get_contents($file), true);
+            default:
+                if (isset($parser)) {
+                    return $parser($file);
+                } else {
+                    return Exception::throwing('无法解析配置文件');
+                }
+        }
+    }
 }

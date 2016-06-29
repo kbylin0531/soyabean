@@ -68,10 +68,13 @@ class Dispatcher extends \Soya {
         null === $ctrler    and $ctrler = $this->_controller;
         null === $action    and $action = $this->_action;
 
+        self::trace($modules,$ctrler,$action);
 
         define('__MODULE__',URI::getBasicUrl().'/'.$modules);
         define('__CONTROLLER__',__MODULE__.'/'.$ctrler);
         define('__ACTION__',__CONTROLLER__.'/'.$action);
+
+        strpos($modules,'/') and $modules = str_replace('/','\\',$modules);
 
         $config = self::getConfig();
         //模块检测

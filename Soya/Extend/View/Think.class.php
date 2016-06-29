@@ -9,7 +9,6 @@
 namespace Soya\Extend\View;
 use Soya\Core\Exception;
 use Soya\Core\Storage;
-use Soya\Extend\Controller;
 use Soya\Util\SEK;
 
 /**
@@ -260,7 +259,7 @@ class Think implements ViewInterface{
             '__ACTION__'    =>  __ACTION__,     // 当前操作地址
             '__SELF__'      =>  __ACTION__,       // 当前页面地址
             '__URL__'       =>  __CONTROLLER__,
-            '__PUBLIC__'    =>  __URI__.'Public/',// 站点公共目录
+            '__PUBLIC__'    =>  __URI__.'Public',// 站点公共目录
         );
         // 允许用户自定义模板的字符串替换
         if(is_array($this->config['TMPL_PARSE_STRING']) )
@@ -343,6 +342,7 @@ class Think implements ViewInterface{
         $end        =   $this->config['TAGLIB_END'];
         // 读取模板中的继承标签
         $find       =   preg_match('/'.$begin.'extend\s(.+?)\s*?\/'.$end.'/is',$content,$matches);
+//        \Soya\dumpout($begin,$end,$matches);
         if($find) {
             //替换extend标签
             $content    =   str_replace($matches[0],'',$content);
@@ -350,7 +350,7 @@ class Think implements ViewInterface{
             preg_replace_callback('/'.$begin.'block\sname=[\'"](.+?)[\'"]\s*?'.$end.'(.*?)'.$begin.'\/block'.$end.'/is', array($this, 'parseBlock'),$content);
             // 读取继承模板
             $array      =   $this->parseXmlAttrs($matches[1]);
-            $content    =   $this->parseTemplateName($array['name']);
+            $content    =   $this->parseTemplateName($array['file']);
             $content    =   $this->parseInclude($content, false); //对继承模板中的include进行分析
             // 替换block标签
             $content = $this->replaceBlock($content);
@@ -724,8 +724,11 @@ class Think implements ViewInterface{
             if(empty($templateName)) continue;
             if(false === strpos($templateName,$this->config['TEMPLATE_SUFFIX'])) {
                 // 解析规则为 模块@主题/控制器/操作 $templateName   =   T($templateName);
-                $templateName = Controller::parseTemplateLocation($templateName);
+                //现在解析规则改为 PATH_BASE.'Application'.'#相对于Application目录的位置#';
+//                $templateName = Controller::parseTemplateLocation($templateName);
+                $templateName .= $this->config['TEMPLATE_SUFFIX'];
             }
+            $templateName = PATH_BASE.'Application'.$templateName;
             // 获取模板文件内容
             $parseStr .= file_get_contents($templateName);
         }
