@@ -1,14 +1,14 @@
 <extend file="/System/Common/View/basic.html" />
 <block name="script">
     <script>
-        dazz.ready(function () {
-            var message = dazz.context.getHash();
+        soya.ready(function () {
+            var message = soya.context.getHash();
             message && Dazzling.toast.error(decodeURI(message));
 
             var loginform = $("#login-form");
             loginform.on('submit',function () {
                 var password = $("[name=password]");
-                password.val(md5(password.val()));
+                password.val(soya.utils.md5(soya.utils.sha1(password.val())));
             });
         });
     </script>
@@ -56,7 +56,7 @@
                         </div>
                         <div class="col-xs-8 bs-reset">
                             <div class="login-copyright text-right">
-
+                                 版权归XXX所有
                             </div>
                         </div>
                     </div>

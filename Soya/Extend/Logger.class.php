@@ -139,7 +139,7 @@ class Logger extends \Soya{
      * @param boolean $record  是否强制记录
      * @return $this
      */
-    public function record($message,$level=self::ERR,$record=false) {
+    public static function record($message,$level=self::ERR,$record=false) {
         if($record ){
             self::$log[] =   "{$level}: {$message}\r\n";
         }else{
@@ -148,7 +148,6 @@ class Logger extends \Soya{
                 self::$log[] =   "{$level}: {$message}\r\n";
             }
         }
-        return $this;
     }
 
     /**
@@ -158,7 +157,7 @@ class Logger extends \Soya{
      * @param string $destination  写入目标
      * @return void
      */
-    public function save($destination='') {
+    public static function save($destination='') {
         if(empty(self::$log)) return ;
 
         $config = self::getConfig();
@@ -167,7 +166,7 @@ class Logger extends \Soya{
             $destination = $config['LOG_PATH'].date('y_m_d').'.log';
         }
         $message    =   implode('',self::$log);
-        $this->_write($message,$destination);
+        self::_write($message,$destination);
         // 保存后清空日志缓存
         self::$log = array();
     }
@@ -179,7 +178,7 @@ class Logger extends \Soya{
      * @param string $destination  写入目标
      * @return void
      */
-    public function _write($log,$destination='') {
+    public static function _write($log,$destination='') {
         $config = self::getConfig();
         $now = date($config['LOG_TIME_FORMAT']);
         if(empty($destination)){

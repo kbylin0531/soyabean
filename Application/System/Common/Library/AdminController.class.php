@@ -8,16 +8,19 @@
 
 namespace Application\System\Common\Library;
 
+use Application\System\Member\Common\Logic\LoginLogic;
 use Soya\Util\SEK;
 
 class AdminController extends CommonController{
 
     public function __construct(){
         parent::__construct(null);
-        if(!$this->checkLoginStatus()){
-            $this->go('/Admin/PublicAction/PageLogin');
+        if(!LoginLogic::getInstance()->isLogin()){
+            $this->go('/Member/Public/login');
         }
     }
+
+
 
     /**
      * @param string|null $template 如果是null,将自动获取调用本方法的名称并去掉开头的Page前缀
@@ -64,20 +67,20 @@ class AdminController extends CommonController{
      * @return array
      */
     private function getPageInfo(){
-        $memuModel = new MenuModel();
-        $pageinfo = [
-            //head部分
-            'title' => 'KbylinFramework',
-            'coptright' => ' 2014 © YZ',
-            //body部分
-            'logo'  => 'Dazz',
-        ];
-        $menu = [
-            'menuitem_id'   => 560,//for finding his parent
-            'header_menu'   => $memuModel->getHeaderMenuConfig(),
-            'sidebar_menu'  => $memuModel->getSidebarMenuConfig(),
-        ];
-        return array_merge($pageinfo, $menu);
+//        $memuModel = new MenuModel();
+//        $pageinfo = [
+//            //head部分
+//            'title' => 'KbylinFramework',
+//            'coptright' => ' 2014 © YZ',
+//            //body部分
+//            'logo'  => 'Dazz',
+//        ];
+//        $menu = [
+//            'menuitem_id'   => 560,//for finding his parent
+//            'header_menu'   => $memuModel->getHeaderMenuConfig(),
+//            'sidebar_menu'  => $memuModel->getSidebarMenuConfig(),
+//        ];
+//        return array_merge($pageinfo, $menu);
     }
 
     /**

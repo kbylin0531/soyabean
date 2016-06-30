@@ -7,42 +7,16 @@
  */
 namespace Application\System\Member\Controller;
 use Application\System\Common\Library\CommonController;
-use Application\System\Member\Model\MemberModel;
-use Soya\Extend\Cookie;
-use Soya\Util\Encrypt\Base64;
-use Soya\Extend\Session;
+use Application\System\Member\Common\Logic\LoginLogic;
+use Soya\Core\URI;
+use Soya\Extend\Response;
+use Soya\Util\UserAgent;
 
 /**
  * Class PublicController 公共可以访问的控制器
  * @package Application\System\Member\Controller
  */
 class PublicController extends CommonController {
-
-    private static $key = '_userinfo_';
-    /**
-     * check the current user login status
-     * @return bool
-     */
-    public function isLogin(){
-        $session = Session::getInstance();
-        $status = $session->get(self::$key);//return null if not set
-        if(!$status){
-            $cookie = Cookie::getInstance()->get(self::$key);
-            if($cookie){
-                $usrinfo = unserialize(Base64::decrypt($cookie, self::$key));
-                $session->set(self::$key, $usrinfo);
-                return true;
-            }
-        }
-        return $status?true:false;
-    }
-
-    public function logout(){
-        Session::getInstance()->clear(self::$key);
-        Cookie::getInstance()->clear(self::$key);
-        $this->redirect(__CONTROLLER__.'/PageLogin');
-    }
-
     /**
      * @param $username
      * @param $password
@@ -50,30 +24,23 @@ class PublicController extends CommonController {
      */
     public function login($username=null,$password=null,$remember=false){
         if(IS_METHOD_POST){
-            $model = new MemberModel();
-            $usrinfo = $model->getUserInfo($username);
-
-            if(!$usrinfo) $this->redirect(__CONTROLLER__.'/PageLogin#'.urlencode("用户'{$username}'不存在"));
-
-            if(false === stripos($usrinfo['roles'], 'A')){
-                $this->redirect(__CONTROLLER__.'/PageLogin#'.urlencode('暂时不允许非管理员用户登录!'));
+            $result = LoginLogic::getInstance()->login($username,$password,$remember);
+//            \Soya\dumpout($result,__CONTROLLER__.'/login#'.urlencode($result));
+            if(is_string($result)){
+                URI::redirect(__CONTROLLER__.'/login#'.urlencode($result));
             }
-
-            if (md5(rtrim($usrinfo['password'])) === $password){
-                //set session,browser must enable cookie
-                if($remember){
-                    $sinfo = serialize($usrinfo);
-                    $cookie = Base64::encrypt($sinfo, self::$key);
-                    Cookie::getInstance()->set(self::$key, $cookie,7*24*3600);//one week
-                }
-                Session::getInstance()->set(self::$key, $usrinfo);
-                $this->go('Admin/System/Menu/Management');
-            }else{
-                $this->redirect(__CONTROLLER__.'/PageLogin#'.urlencode('密码不正确'));
-            }
+            $this->redirect('/Admin/Index/index');
             exit();
         }
         $this->display();
+    }
+
+    /**
+     * 注销登录
+     */
+    public function logout(){
+        LoginLogic::getInstance()->logout();
+        $this->redirect(__CONTROLLER__.'/login');
     }
 
 

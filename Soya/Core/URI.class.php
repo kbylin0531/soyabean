@@ -391,8 +391,6 @@ class URI extends \Soya{
         return $uri;
     }
 
-
-
     /**
      * 自动从运行环境中获取URI
      * 直接访问：
@@ -447,7 +445,6 @@ class URI extends \Soya{
         return $uri[$key];
     }
 
-
     /**
      * 判断是否是重定向链接
      * 判断依据：
@@ -460,8 +457,6 @@ class URI extends \Soya{
         $link = trim($link);
         return (0 === strpos($link, 'http')) or (0 === strpos($link,'/')) or (0 === strpos($link, 'https'));
     }
-
-
 
     /**
      * 重定向
@@ -501,7 +496,7 @@ class URI extends \Soya{
         if(!$url){
             return self::getInstance()->create(null,null,null,$params);
         }
-        $parts = @explode('/',$url);
+        $parts = @explode('/',trim($url,'/'));
 
 //        \Soya\dumpout($parts);
         //调用URLHelper创建URL

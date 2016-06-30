@@ -70,7 +70,8 @@ class Dispatcher extends \Soya {
 
         self::trace($modules,$ctrler,$action);
 
-        define('__MODULE__',URI::getBasicUrl().'/'.$modules);
+        define('__ROOT__',URI::getBasicUrl());
+        define('__MODULE__',__ROOT__.'/'.$modules);
         define('__CONTROLLER__',__MODULE__.'/'.$ctrler);
         define('__ACTION__',__CONTROLLER__.'/'.$action);
 

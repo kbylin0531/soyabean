@@ -3,7 +3,7 @@
  * @type object
  */
 var Dazzling = {};
-dazz.ready(function () {
+soya.ready(function () {
     Dazzling = (function () {
         "use strict";
         if (!jQuery) throw "Require Jquery!";
@@ -78,7 +78,7 @@ dazz.ready(function () {
                      * @returns {{}}
                      */
                     getInstance: function () {
-                        var instance = dazz.newInstance(this);
+                        var instance = soya.newInstance(this);
                         instance.target = page.header.getHeaderMenu();
                         return instance;
                     },
@@ -133,7 +133,7 @@ dazz.ready(function () {
                             var env = this;
                             isappend = isappend ? true : false;
                             //创建并添加ul
-                            dazz.utils.each(children, function (child) {
+                            soya.utils.each(children, function (child) {
                                 var li = $(document.createElement('li'));
                                 li.attr('menu-id', menuitemsconf['id']);//set menu-id for li
                                 li.append(env._createAnchor(child, isappend, callback));
@@ -154,7 +154,7 @@ dazz.ready(function () {
                      */
                     load: function (data, callback) {
                         var env = this;
-                        dazz.utils.each(data, function (menuitem) {
+                        soya.utils.each(data, function (menuitem) {
                             // console.log(menuitem)
                             var li = $(document.createElement('li'));
                             li.addClass('classic-menu-dropdown');
@@ -190,14 +190,14 @@ dazz.ready(function () {
                      */
                     setMenu: function (conf) {
                         var ele = $(".dropdown-user>.dropdown-menu");
-                        dazz.utils.each(conf, function (item) {
+                        soya.utils.each(conf, function (item) {
                             var li = document.createElement('li');
                             var a = document.createElement('a');
                             a.innerHTML = item['title'];
                             li.appendChild(a);
 
                             if (!item.hasOwnProperty('href')) item['href'] = '#';
-                            a.setAttribute('href', dazz.context.getBaseUri()+item['href']);
+                            a.setAttribute('href', soya.context.getBaseUri()+item['href']);
 
                             if (item.hasOwnProperty('icon')) {
                                 var i = document.createElement('i');
@@ -232,23 +232,23 @@ dazz.ready(function () {
                 },
                 lastIsClosed:function () {
                     this.checkInit();
-                    return dazz.utils.cookie.get('dazz_sidebar_show');
+                    return soya.utils.cookie.get('dazz_sidebar_show');
                 },
                 open:function () {
                     this.checkInit();
                     thisbody.removeClass("page-sidebar-closed");
                     this.sidebar_menu.removeClass("page-sidebar-menu-closed");
-                    dazz.utils.cookie.set('dazz_sidebar_show',0,0);
+                    soya.utils.cookie.set('dazz_sidebar_show',0,0);
                 },
                 close:function () {
                     this.checkInit();
                     thisbody.addClass("page-sidebar-closed");
                     this.sidebar_menu.addClass("page-sidebar-menu-closed");
-                    dazz.utils.cookie.set('dazz_sidebar_show',1,0);
+                    soya.utils.cookie.set('dazz_sidebar_show',1,0);
                 },
                 menu:{
                     getInstance: function () {
-                        var instance = dazz.newInstance(this);
+                        var instance = soya.newInstance(this);
                         instance.target = page.sidebar.getSidebarMenu();
                         return instance;
                     },
@@ -267,7 +267,7 @@ dazz.ready(function () {
                         } else {
                             //create link for this anchor
                             if (attrs['href']) {
-                                attrs['href'] = dazz.context.getBaseUri() + attrs['href'];
+                                attrs['href'] = soya.context.getBaseUri() + attrs['href'];
                             } else {
                                 attrs['href'] = 'javascript:void(0);';
                             }
@@ -282,7 +282,7 @@ dazz.ready(function () {
                         var li_ul = $('<ul class="sub-menu"></ul>');
 
                         var env = this;
-                        dazz.utils.each(menuitem.children, function (subitem) {
+                        soya.utils.each(menuitem.children, function (subitem) {
                             var hasSubmenu = subitem.hasOwnProperty('children');
 
                             var li_navitem = $(document.createElement('li'));
@@ -312,7 +312,7 @@ dazz.ready(function () {
                         // console.log(data[active_menu_parent]);
                         data = data[active_menu_parent]['config'];
                         // console.log(data)
-                        dazz.utils.each(data, function (topitemconf) {
+                        soya.utils.each(data, function (topitemconf) {
                             var li_navitem = $(document.createElement('li')).addClass('nav-item');
                             var hasSubmenu = topitemconf.hasOwnProperty('children');
 
@@ -372,7 +372,7 @@ dazz.ready(function () {
                 }
             };
             var adjustHeight = function () {
-                var height = dazz.context.getViewPort().height;
+                var height = soya.context.getViewPort().height;
                 var target = arguments[0];
                 for(var i = 1 ; i < arguments.length;i++){
                     var element = arguments[i];
@@ -451,9 +451,9 @@ dazz.ready(function () {
                     var li = $("<li></li>");
                     var a;
                     if (icon) {
-                        a = $('<a href="javascript:void(0);" id="la_' + dazz.utils.guid() + '"><i class="' + icon + '"></i> ' + actionName + '</a>');
+                        a = $('<a href="javascript:void(0);" id="la_' + soya.utils.guid() + '"><i class="' + icon + '"></i> ' + actionName + '</a>');
                     } else {
-                        a = $('<a href="javascript:void(0);" id="la_' + dazz.utils.guid() + '"> ' + actionName + '</a>');
+                        a = $('<a href="javascript:void(0);" id="la_' + soya.utils.guid() + '"> ' + actionName + '</a>');
                     }
                     this.page_action_list.append(li.append(a));
                     a.click(callback);
@@ -481,7 +481,7 @@ dazz.ready(function () {
         var GenKits = (function () {
             return {
                 autofill: function (ids, valmap) {
-                    dazz.utils.each(ids, function (id) {
+                    soya.utils.each(ids, function (id) {
                         if (valmap.hasOwnProperty(id)) {
                             switch (typeof valmap[id]) {
                                 case 'string':
@@ -597,10 +597,10 @@ dazz.ready(function () {
                     'backdrop': 'static',
                     'keyboard': true
                 };
-                config = dazz.utils.initOption(config, option);
+                config = soya.utils.initOption(config, option);
 
-                var instance = dazz.newInstance(this);
-                var id = 'modal_' + dazz.utils.guid();
+                var instance = soya.newInstance(this);
+                var id = 'modal_' + soya.utils.guid();
 
                 var modal = $('<div class="modal" id="' + id + '" aria-hidden="true" role="dialog"></div>');
                 if (typeof config['backdrop'] !== "string") config['backdrop'] = config['backdrop'] ? 'true' : 'false';
@@ -638,7 +638,7 @@ dazz.ready(function () {
                 config['title'] && instance.title(config['title']);
 
                 //事件注册
-                dazz.utils.each(['show', 'shown', 'hide', 'hidden'], function (eventname) {
+                soya.utils.each(['show', 'shown', 'hide', 'hidden'], function (eventname) {
                     modal.on(eventname + '.bs.modal', function () {
                         // console.log(eve
                         //handle the element size change while window resizedntname,config[eventname]);
@@ -692,7 +692,7 @@ dazz.ready(function () {
             'start': function (infos,itemsIds) {
                 var resizehandler;
                 var currentHeight;
-                var browerinfo = dazz.context.getBrowserInfo();
+                var browerinfo = soya.context.getBrowserInfo();
                 var isIE8 = browerinfo.type === 'ie' && 8 === browerinfo.version;
                 var isIE9 = browerinfo.type === 'ie' && 9 === browerinfo.version;
                 var isIE10 = browerinfo.type === 'ie' && 10 === browerinfo.version;
@@ -720,7 +720,7 @@ dazz.ready(function () {
                 //****************************************
                 // 控制sidebar的显示和隐藏
                 //TODO
-                if(dazz.context.getViewPort().width <= convention['sizeSM'] || page.sidebar.lastIsClosed()){
+                if(soya.context.getViewPort().width <= convention['sizeSM'] || page.sidebar.lastIsClosed()){
                     page.sidebar.close();
                 }
                 thisbody.find(".sidebar-toggler").click(function () {
@@ -752,7 +752,7 @@ dazz.ready(function () {
                 page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['menuitem_id']);//.active(sideractiveindex);
 
                 //the real path may be an empty string (while the basic uri is deal in backgroud,this can be set to login with auto jump)
-                var path = dazz.context.getPath();
+                var path = soya.context.getPath();
                 if(!path.length) throw "not allow the empty uri path";
                 var value = page.sidebar.menu.findOuter(pageinfo['sidebar_menu'],path,'href',function (item, compval) {
                     // console.log(item,compval);
@@ -784,13 +784,13 @@ dazz.ready(function () {
                 //设置之后的操作所指定的DatatableAPI对象
                 'bind': function (dtJquery, options) {
                     dtJquery = GenKits.toJquery(dtJquery);
-                    var newinstance = dazz.newInstance(this);
+                    var newinstance = soya.newInstance(this);
                     newinstance.dtElement = dtJquery;
 
                     var convention = {
                         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
                     };
-                    dazz.utils.each(options,function (value, key) {
+                    soya.utils.each(options,function (value, key) {
                         convention[key] = value;
                     });
 
@@ -823,7 +823,7 @@ dazz.ready(function () {
                 'update': function (newdata, line) {
                     (line === undefined) && (line = this.current_row);
                     if (line) {
-                        if (dazz.utils.isArray(line)) {
+                        if (soya.utils.isArray(line)) {
                             for (var i = 0; i < line.length; i++) {
                                 this.update(newdata, line[i]);
                             }
@@ -872,9 +872,9 @@ dazz.ready(function () {
                  * @param before
                  */
                 'create': function (menus, handler, onItem, before) {
-                    var instance = dazz.newInstance(this);
+                    var instance = soya.newInstance(this);
 
-                    var id = 'cm_' + dazz.utils.guid();
+                    var id = 'cm_' + soya.utils.guid();
                     var contextmenu = $(document.createElement('div'));
                     contextmenu.attr('id', id);
                     var ul = $(document.createElement('ul'));
@@ -884,9 +884,9 @@ dazz.ready(function () {
 
                     var flag = false;
                     //菜单项
-                    dazz.utils.each(menus, function (group) {
+                    soya.utils.each(menus, function (group) {
                         flag && ul.append($('<li class="divider"></li>'));//对象之间划割
-                        dazz.utils.each(group, function (value, key) {
+                        soya.utils.each(group, function (value, key) {
                             ul.append('<li><a tabindex="' + key + '">' + value + '</a></li>');
                         });
                         flag = true;
@@ -932,7 +932,7 @@ dazz.ready(function () {
                     if (typeof form === 'string') form = $(form);
                     if (!(form instanceof jQuery))  return Dazzling.toast.error("Parameter 1 expect to be jquery ");
                     var target, key;
-                    var mapDefined = dazz.utils.isObject(map, 'Object');
+                    var mapDefined = soya.utils.isObject(map, 'Object');
 
                     for (key in data) {
                         if (!data.hasOwnProperty(key)) continue;
@@ -969,9 +969,9 @@ dazz.ready(function () {
             nestable: {
                 //create nestable list and return a new instance
                 create: function (group) {
-                    var instance = dazz.newInstance(this);
+                    var instance = soya.newInstance(this);
 
-                    var id = 'nestable_' + dazz.utils.guid();
+                    var id = 'nestable_' + soya.utils.guid();
                     var dd = $('<div class="dd" id="' + id + '"></div>');
 
                     instance.target = dd.nestable({group: group ? group : id});
@@ -987,10 +987,10 @@ dazz.ready(function () {
                 },
                 //创建OL节点,children为子元素数组,target为创建的列表附加的目标(目标缺失时选用this.target,即dd)
                 createItemList: function (data, target, callback) {
-                    data = dazz.utils.toObject(data);
+                    data = soya.utils.toObject(data);
                     var env = this;
                     var ol = $('<ol class="dd-list"></ol>');
-                    dazz.utils.each(data, function (item) {
+                    soya.utils.each(data, function (item) {
                         env.createItem(item, ol, callback);
                     });
 
@@ -1015,7 +1015,7 @@ dazz.ready(function () {
                 },
                 //update the data hold by item node,but except 'children'
                 updateItemData: function (linode, data, titlecallback) {//titlecallback means update the display text(include html tag)
-                    dazz.utils.each(data, function (value, key) {
+                    soya.utils.each(data, function (value, key) {
                         if (key === 'children') return;
                         switch (typeof value) {
                             case 'string':
@@ -1053,9 +1053,9 @@ dazz.ready(function () {
                     }
                 },
                 createItem: function (data, target, callback) {
-                    data = dazz.utils.toObject(data);
+                    data = soya.utils.toObject(data);
                     //设置基本的两个属性
-                    if (dazz.utils.checkProperty(data, ['id', 'title']) < 1) {
+                    if (soya.utils.checkProperty(data, ['id', 'title']) < 1) {
                         console.log('id/title should not be empty!');
                         return;
                     }
@@ -1109,7 +1109,7 @@ dazz.ready(function () {
                     callback && callback(data, linode);//每次遍历一项回调
 
                     //look through children if attach success
-                    dazz.utils.checkProperty(data, 'children') && this.createItemList(data['children'], linode, callback);
+                    soya.utils.checkProperty(data, 'children') && this.createItemList(data['children'], linode, callback);
 
                     return linode;
                 },
@@ -1117,13 +1117,13 @@ dazz.ready(function () {
                     var env = this;
                     if ($.isArray(data)) {
                         var array = [];
-                        dazz.utils.each(data, function (value, key) {
+                        soya.utils.each(data, function (value, key) {
                             array[key] = env._serialize(value);
                         });
                         return array;
                     } else {
                         var object = {};
-                        dazz.utils.each(data, function (value, key) {
+                        soya.utils.each(data, function (value, key) {
                             switch (key) {
                                 case 'id':
                                 case 'href':
@@ -1189,7 +1189,7 @@ dazz.ready(function () {
             },
             tab: {
                 _createNav: function (config) {
-                    var id = dazz.utils.guid();
+                    var id = soya.utils.guid();
                     var nav = $('<ul id="' + id + '" class="nav nav-tabs"></ul>');
                     var isfirst = true;
                     var node, ul;
@@ -1201,7 +1201,7 @@ dazz.ready(function () {
 
 
                         if (item.hasOwnProperty('children')) {/*下拉*/
-                            var guid = dazz.utils.guid();
+                            var guid = soya.utils.guid();
                             var children = item['children'];
                             node = $(document.createElement('li'));
                             node.append($('<a href="javascript:void(0);" id="' + guid + '" class="dropdown-toggle" data-toggle="dropdown">' + item['title'] + '<b class="caret"></b></a>'));
@@ -1231,7 +1231,7 @@ dazz.ready(function () {
                     return $('<li><a href="#' + node['id'] + '" data-toggle="tab">' + node['title'] + '</a></li>');
                 },
                 _createContent: function (config) {
-                    var content = $('<div id="' + dazz.utils.guid() + '" class="tab-content"></div>');
+                    var content = $('<div id="' + soya.utils.guid() + '" class="tab-content"></div>');
                     for (var x = 0; x < config.length; x++) {
                         if (config[x].hasOwnProperty('children')) {/*下拉*/
                             for (var y in config[x]['children']) {

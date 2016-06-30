@@ -13,7 +13,7 @@ return [
     ],
     'DRIVER_CONFIG_LIST' => [
         [
-            'dbname'    => 'ot',//选择的数据库
+            'dbname'    => 'soya',//选择的数据库
             'username'  => 'root',
             'password'  => '',
             'host'      => 'localhost',

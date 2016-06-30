@@ -16,9 +16,7 @@ class CommonController extends Controller {
         $this->display();
     }
 
-    protected function go($path,$base=null){
-        $base or $base = __URI__;
-        $path = ltrim($path,'/');
-        $this->redirect(__URI__.$path);
+    protected function go($path,$base=__ROOT__){
+        $this->redirect($base.$path);
     }
 }

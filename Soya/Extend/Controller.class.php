@@ -165,6 +165,7 @@ class Controller extends \Soya{
 
     /**
      * 页面跳转
+     * 与URI::redirect的区别是后者认为参数中的url是一个有效的跳转链接
      * @param string $compo   形式如'Cms/install/third' 的action定位
      * @param array $params   URL参数
      * @param int $time       等待时间
@@ -172,6 +173,7 @@ class Controller extends \Soya{
      * @return void
      */
     public function redirect($compo,array $params=[],$time=0,$message=''){
+//        \Soya\dumpout($compo);
         URI::redirect(URI::url($compo,$params),$time,$message);
     }
 

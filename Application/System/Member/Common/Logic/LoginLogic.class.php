@@ -18,6 +18,15 @@ class LoginLogic extends Logic {
     private static $key = '_userinfo_';
 
     /**
+     * @return LoginLogic
+     * @param null $identify
+     * @return Logic
+     */
+    public static function getInstance($identify = NULL){
+        return parent::getInstance();
+    }
+
+    /**
      * check the current user login status
      * @return bool
      */
@@ -45,7 +54,9 @@ class LoginLogic extends Logic {
     public function login($username,$password,$remember){
         $model = new MemberModel();
         $usrinfo = $model->checkLogin($username,$password);
+//        \Soya\dumpout($usrinfo);
         if(false === $usrinfo){
+//            \Soya\dumpout($model->error());
             return $model->error();
         }
 

@@ -252,14 +252,10 @@ class Think implements ViewInterface{
     private function replaceTemplateString(&$tmplContent){
         $replace =  array(
             '__URI__'       =>  __URI__,
-            '__ROOT__'      =>  __URI__,       // 当前网站地址
-            '__APP__'       =>  __URI__,        // 当前应用地址
+            '__ROOT__'      =>  __ROOT__,       // 当前网站地址
             '__MODULE__'    =>  __MODULE__,
             '__CONTROLLER__'=>  __CONTROLLER__,
             '__ACTION__'    =>  __ACTION__,     // 当前操作地址
-            '__SELF__'      =>  __ACTION__,       // 当前页面地址
-            '__URL__'       =>  __CONTROLLER__,
-            '__PUBLIC__'    =>  __URI__.'Public',// 站点公共目录
         );
         // 允许用户自定义模板的字符串替换
         if(is_array($this->config['TMPL_PARSE_STRING']) )

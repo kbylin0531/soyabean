@@ -9,7 +9,7 @@
 namespace Application\System\Member\Model;
 use Soya\Extend\Model;
 
-abstract class EntiryCommonModel extends Model {
+abstract class EntityCommonModel extends Model {
 
     /**
      * 获取列表

@@ -682,8 +682,6 @@ class Model {
         return $this;
     }
 
-    private $_error = null;
-
     /**
      * @param null $error
      * @return bool|null|string
@@ -691,13 +689,13 @@ class Model {
     public function error($error=null){
         if(isset($error)){
             //设置了error参数表示设置自定义的错误,同时返回false表示发生了错误
-            $this->_error = $error;
+            $this->error = $error;
             return false;
         }
-        if(null === $this->_error){
-            $this->_error = $this->dao->getError();
+        if(null === $this->error){
+            $this->error = $this->dao->getError();
         }
-        return $this->_error;
+        return $this->error;
     }
     /**
      * 开启事务
@@ -936,6 +934,17 @@ class Model {
      * @var array
      */
     protected $_validate        =   array();
+
+    /**
+     * 自动验证
+     * @param array $data
+     * @return bool|string 只有但会true时表示没有发生错误
+     */
+    protected function validate($data=null){
+        var_export($data);
+        return true;
+    }
+
     /**
      * 自动表单验证
      * @access protected
