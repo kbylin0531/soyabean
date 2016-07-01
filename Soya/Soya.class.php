@@ -163,7 +163,7 @@ class Soya {
      */
     final public static function dispatch($modules,$ctrler,$action){
 //        \Soya\dumpout($modules,$ctrler,$action);
-        $result = Dispatcher::getInstance(SINGLE_INSTANCE)->fetch($modules,$ctrler,$action)->exec();
+        $result = Dispatcher::getInstance(SINGLE_INSTANCE)->fill($modules,$ctrler,$action)->exec();
         return $result;
     }
 

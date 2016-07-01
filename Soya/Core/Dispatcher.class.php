@@ -7,9 +7,10 @@
  * Time: 10:35
  */
 namespace Soya\Core;
-use Application\Home\Controller\Blank;
 use ReflectionMethod;
-
+use Soya\Exception\ActionNotFoundException;
+use Soya\Exception\ConfigNotFoundException;
+use Soya\Exception\ModuleNotFoundException;
 use Soya\Util\SEK;
 
 /**
@@ -21,17 +22,11 @@ class Dispatcher extends \Soya {
 
     const CONF_NAME = 'dispatcher';
     const CONF_CONVENTION = [
-        //空缺时默认补上
+        //空缺时默认补上,Done!
         'INDEX_MODULE'      => 'Home',
         'INDEX_CONTROLLER'  => 'Index',
         'INDEX_ACTION'      => 'index',
 
-        //找不到对应时
-        'EMPTY_MODULE'      => 'Home',
-        'EMPTY_CONTROLLER'  => 'Home\\Controller\\EmptyController',
-        'EMPTY_ACTION'      => '_empty',
-
-        'CONTROLLER_SUFFIX' => 'Controller',
     ];
 
     private $_module = null;
@@ -45,9 +40,8 @@ class Dispatcher extends \Soya {
      * @param string $action
      * @return $this
      */
-    public function fetch($modules,$ctrler,$action){
+    public function fill($modules,$ctrler,$action){
         $config = self::getConfig();
-//        dumpout($modules,$ctrler,$action);
         $this->_module      = $modules?$modules:$config['INDEX_MODULE'];
         $this->_controller  = $ctrler?$ctrler:$config['INDEX_CONTROLLER'];
         $this->_action      = $action?$action:$config['INDEX_ACTION'];
@@ -70,64 +64,37 @@ class Dispatcher extends \Soya {
 
         self::trace($modules,$ctrler,$action);
 
-        define('__ROOT__',URI::getBasicUrl());
-        define('__MODULE__',__ROOT__.'/'.$modules);
-        define('__CONTROLLER__',__MODULE__.'/'.$ctrler);
-        define('__ACTION__',__CONTROLLER__.'/'.$action);
-
         strpos($modules,'/') and $modules = str_replace('/','\\',$modules);
 
-        $config = self::getConfig();
         //模块检测
-        is_dir(PATH_BASE."Application/{$modules}") or $modules = $config['EMPTY_MODULE'];
-
+        is_dir(PATH_BASE."Application/{$modules}") or ModuleNotFoundException::throwing($modules);
         //控制器名称及存实性检测
-        $className = "Application\\{$modules}\\Controller\\{$ctrler}{$config['CONTROLLER_SUFFIX']}";
-        if(!class_exists($className)){
-            //TODO:控制器或者方法找不到的整理
-            if($config['EMPTY_CONTROLLER'] or !class_exists($config['EMPTY_CONTROLLER'])){
-                Exception::throwing("Controller '$className' not found!");
-            }
-            if(is_array($config['EMPTY_CONTROLLER'])){
-                if(isset($config['EMPTY_CONTROLLER'][$modules])){
-                    $className = $config['EMPTY_CONTROLLER'][$modules];
-                }elseif(isset($config['EMPTY_CONTROLLER']['DEFAULT'])){
-                    $className = $config['EMPTY_CONTROLLER']['DEFAULT'];
-                }else{
-                    Exception::throwing('Controller not found !');
-                }
-            }else{
-                $className = $config['EMPTY_CONTROLLER'];
-            }
-        }
+        $className = "Application\\{$modules}\\Controller\\{$ctrler}Controller";
+        class_exists($className) or ConfigNotFoundException::throwing($modules,$className);
         $classInstance =  new $className();
+        //方法检测
+        method_exists($classInstance,$action) or ActionNotFoundException::throwing($modules,$className,$action);
+        $method = new ReflectionMethod($classInstance, $action);
 
-
-        //方法名称及存实性检测
-        if(!method_exists($classInstance,$action)){
-            if($config['EMPTY_ACTION'] and method_exists($classInstance,$config['EMPTY_ACTION'])){
-                $action = $config['EMPTY_ACTION'];
-            }else{
-                Exception::throwing($className,$action,'The method do not exits!');
-            }
-        }
-
-        //获取实际目标方法
-        $targetMethod = new ReflectionMethod($classInstance, $action);
+        //在执行方法之前定义常量
+        define('REQUESR_MODULE',$modules);//请求的模块
+        define('REQUESR_CONTROLLER',$ctrler);//请求的控制器
+        define('REQUESR_ACTION',$action);//请求的操作
 
         $result = null;
-        if ($targetMethod->isPublic() and !$targetMethod->isStatic()) {//仅允许非静态的公开方法
+        if ($method->isPublic() and !$method->isStatic()) {//仅允许非静态的公开方法
             //方法的参数检测
-            if ($targetMethod->getNumberOfParameters()) {//有参数
-                $args = self::fetchMethodArguments($targetMethod);
+            if ($method->getNumberOfParameters()) {//有参数
+                $args = self::fetchMethodArguments($method);
                 //执行方法
-                $result = $targetMethod->invokeArgs($classInstance, $args);
+                $result = $method->invokeArgs($classInstance, $args);
             } else {//无参数的方法调用
-                $result = $targetMethod->invoke($classInstance);
+                $result = $method->invoke($classInstance);
             }
         } else {
             Exception::throwing($className, $action);
         }
+
 
         \Soya::recordStatus('execute_end');
         return $result;
@@ -143,21 +110,14 @@ class Dispatcher extends \Soya {
      */
     private static function fetchMethodArguments(ReflectionMethod $targetMethod){
         //获取输入参数
-        $vars = [];
-        $args = [];
+        $vars = $args = [];
         switch(strtoupper($_SERVER['REQUEST_METHOD'])){
-            case 'POST':
-                $vars    =  array_merge($_GET,$_POST);
-                break;
-            case 'PUT':
-                parse_str(file_get_contents('php://input'), $vars);
-                break;
-            default:
-                $vars  =  $_GET;
+            case 'POST':$vars    =  array_merge($_GET,$_POST);  break;
+            case 'PUT':parse_str(file_get_contents('php://input'), $vars);  break;
+            default:$vars  =  $_GET;
         }
         //获取方法的固定参数
         $methodParams = $targetMethod->getParameters();
-
         //遍历方法的参数
         foreach ($methodParams as $param) {
             $paramName = $param->getName();
@@ -167,11 +127,29 @@ class Dispatcher extends \Soya {
             }elseif($param->isDefaultValueAvailable()){
                 $args[] =   $param->getDefaultValue();
             }else{
-                Exception::throwing("Miss action parameter '{$param}'!");
+                return Exception::throwing("目标缺少参数'{$param}'!");
             }
         }
-
         return $args;
+    }
+
+    /**
+     * 加载当前访问的模块的指定配置
+     * 配置目录在模块目录下的'Common/Conf'
+     * @param string $name 配置名称,多个名称以'/'分隔
+     * @param string $type 配置类型,默认为php
+     * @return array
+     */
+    public static function load($name,$type=Configger::TYPE_PHP){
+        if(!defined('REQUESR_MODULE')) return Exception::throwing('\'load\'必须在\'exec\'方法之后调用!');//前提是正确制定过exec方法
+        $path = PATH_BASE.'Application/'.REQUESR_MODULE.'/Common/Conf/';
+//        \Soya\dumpout($path);
+        $storage = Storage::getInstance();
+        if($storage->has($path) === Storage::IS_DIR){
+            $file = "{$path}/{$name}.".$type;
+            return Configger::load($file);
+        }
+        return [];
     }
 
 }

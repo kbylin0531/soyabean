@@ -19,17 +19,20 @@ class View extends \Soya{
             'Soya\\Extend\\View\\Think',
         ],
         'DRIVER_CONFIG_LIST' => [
-            'SMARTY_DIR'        => PATH_FRAMEWORK.'Vendor/smarty3/libs/',
-            'TEMPLATE_CACHE_DIR'    => PATH_RUNTIME.'View/',
+            [
+                'SMARTY_DIR'        => PATH_FRAMEWORK.'Vendor/smarty3/libs/',
+                'TEMPLATE_CACHE_DIR'    => PATH_RUNTIME.'View/',
 
-            'SMARTY_CONF'       => [
-                //模板变量分割符号
-                'left_delimiter'    => '{',
-                'right_delimiter'   => '}',
-                //缓存开启和缓存时间
-                'caching'        => true,
-                'cache_lifetime'  => 15,
+                'SMARTY_CONF'       => [
+                    //模板变量分割符号
+                    'left_delimiter'    => '{',
+                    'right_delimiter'   => '}',
+                    //缓存开启和缓存时间
+                    'caching'        => true,
+                    'cache_lifetime'  => 15,
+                ],
             ],
+            []
         ],
 
         //模板文件后缀名

@@ -263,7 +263,7 @@ class Model {
      *
      * @param string $tablename 表格名称
      * @param array $data 输入数据
-     * @return bool 是否成功插入
+     * @return int 返回插入的记录的ID
      * @throws Exception
      */
     public function create($tablename=null,array $data=null){
@@ -281,6 +281,7 @@ class Model {
 
             $inputs = $this->_inputs['fields'];
             $sql = "INSERT INTO {$tablename}  ( {$fields} ) VALUES ({$holder});";
+//            \Soya\dump($sql,$inputs);
             return $this->exec($sql,$inputs);
         }else{
             //给定了参数的情况下无需考虑链式调用设置的参数
@@ -358,6 +359,7 @@ class Model {
 
     /**
      * 从数据库中修改指定的数据
+     * 注意：如果更新的数据和数据库中的一样，对于MySQL而言返回的更新成功的记录数目为0
      * @param string $tablename
      * @param string|array $fields
      * @param string|array $where

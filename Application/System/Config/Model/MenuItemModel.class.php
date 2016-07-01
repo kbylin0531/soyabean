@@ -8,6 +8,7 @@
 
 namespace Application\System\Config\Model;
 use Soya\Extend\Model;
+use Soya\Util\SEK;
 
 /**
  * Class MenuItemModel 菜单项管理
@@ -19,49 +20,44 @@ class MenuItemModel extends Model {
 
     /**
      * update the menu item by id
-     * @param $id
-     * @param $title
-     * @param $icon
-     * @param $href
+     * @param array $info
      * @return bool
      */
-    public function updateMenuItemById($id,$title,$icon,$href){
+    public function updateMenuItem(array $info){
+        if(!isset($info['id'])) {
+            $this->error = '缺少ID';
+            return false;
+        }
+        $id = $info['id'];
+        unset($info['id']);
+        return $this->fields($info)->where('id = '.intval($id))->update();
+    }
+
+    public function createMenuItem(array $info){
+        $data = [
+            'title' => null,
+            'value' => null,
+            'icon'  => null,
+            'status'=> null,
+        ];
+        SEK::merge($data,$info);
+        SEK::filter($data,null,true);
+        if(empty($data)){
+            $this->error = '没有要插入的数据！';
+            return false;
+        }
+        return $this->fields($data)->create();
+    }
+
+    /**
+     * 删除配置项
+     * @param $id
+     * @return bool
+     */
+    public function deleteMenuItem($id){
         return $this->fields([
-            'title' => $title,
-            'icon'  => $icon,
-            'value' => $href,
+            'status'    => 0,
         ])->where('id = '.intval($id))->update();
-    }
-
-    /**
-     * delete menu item by id
-     * @param $id
-     * @return bool
-     */
-    public function deleteMenuItemById($id){
-//        $id = intval($id);
-//        $feather = '"id";i:'.$id;
-//        $result = $this->where("[value] like '%".$feather."%' ")->select();
-//        dumpout($result,$this->error());
-        return $this->where('id = '.$id)->delete();
-    }
-
-    /**
-     * 创建菜单项目
-     * @param $id
-     * @param $title
-     * @param string $href
-     * @param string $icon
-     * @return bool
-     */
-    public function createMenuItem($id,$title,$href,$icon) {
-        $result = $this->fields([
-            'id'        => $id, // 前台保证唯一
-            'title'     => $title,
-            'value'     => $href,
-            'icon'      => $icon,
-        ])->create();
-        return $result;
     }
 
     /**
@@ -69,29 +65,23 @@ class MenuItemModel extends Model {
      * @param bool $idaskey 是否将id作为键
      * @return array|bool
      */
-    public function listMenuItems($idaskey=false){
-        $items = $this->select();
+    public function selectMenuItem($idaskey=false){
+        $items = $this->where('status = 1')->select();
+        if(false === $items){return false;}
         if($idaskey and $items){
             $temp = [];
-            foreach ($items as $key=>$item){
-                $temp[$item['id']] = $item;
-                unset($temp[$item['id']]['id']);
+            foreach ($items as &$item){
+                $id = $item['id'];
+                unset($item['id']);
+                $temp[$id] = $item;
             }
             $items =$temp;
         }
         return $items;
     }
 
-    public function hasMenuItemById($id){
+    public function hasMenuItem($id){
         return $this->where('id = '.intval($id))->count();
-    }
-
-    public function updateMenuItem($id,$title,$href,$icon){
-        return $this->fields([
-            'title'     => $title,
-            'value'     => $href,
-            'icon'      => $icon,
-        ])->where('id='.intval($id))->update();
     }
 
 

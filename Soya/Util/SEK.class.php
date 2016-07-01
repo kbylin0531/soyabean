@@ -33,16 +33,7 @@ final class SEK {
     const CALL_ELEMENT_ALL      = 0;
 
     /**
-     * 配置类型
-     * 值使用字符串而不是效率更高的数字是处于可以直接匹配后缀名的考虑
-     */
-    const CONF_TYPE_PHP     = 'php';
-    const CONF_TYPE_INI     = 'ini';
-    const CONF_TYPE_YAML    = 'yaml';
-    const CONF_TYPE_XML     = 'xml';
-    const CONF_TYPE_JSON    = 'json';
-    /**
-     * merge configure from $source to $dest
+     * 将参数二的配置合并到参数一种，如果存在参数一数组不存在的配置项，跳过其设置
      * @param array $dest dest config
      * @param array $sourse sourse config whose will overide the $dest config
      * @param bool|false $cover it will merge the target in recursion while $cover is true
@@ -57,10 +48,35 @@ final class SEK {
                 if(isset($dest[$key]) and is_array($val)){
                     self::merge($dest[$key],$val);
                 }else{
-                    $dest[$key] = $val;
+                    isset($sourse[$key]) and $dest[$key] = $val;
                 }
             }
         }
+    }
+
+    /**
+     * 过滤掉数组中与参数二计算值相等的值，可以是保留也可以是剔除
+     * @param array $array
+     * @param callable|array|mixed $comparer
+     * @param bool $leave
+     * @return void
+     */
+    public static function filter(array &$array, $comparer, $leave=true){
+        static $result = [];
+        $flag = is_callable($comparer);
+        $flag2 = is_array($comparer);
+        foreach ($array as $key=>$val){
+//            \Soya\dump($flag?$comparer($key,$val):($comparer === $val));
+            if($flag?$comparer($key,$val):($flag2?in_array($val,$comparer):($comparer === $val))){
+                if($leave){
+                    unset($array[$key]);
+                }else{
+                    $result[$key] = $val;
+                }
+            }
+        }
+//        \Soya\dump($array,$result);
+        $leave or $array = $result;
     }
 
     /**
@@ -274,34 +290,5 @@ final class SEK {
             $result[$key] = is_array($val) ? self::arrayRecursiveWalk($val,$filter) : call_user_func($filter, $val);
         }
         return $result;
-    }
-    
-    /**
-     * 加载配置文件 支持格式转换 仅支持一级配置
-     * @param string $file 配置文件名
-     * @param callable $parser 配置解析方法 有些格式需要用户自己解析
-     * @return array|mixed
-     * @throws Exception
-     */
-    public static function parseConfigFile($file,callable $parser=null){
-        $ext = pathinfo($file, PATHINFO_EXTENSION);
-        switch ($ext) {
-            case self::CONF_TYPE_PHP:
-                return include $file;
-            case self::CONF_TYPE_INI:
-                return parse_ini_file($file);
-            case self::CONF_TYPE_YAML:
-                return yaml_parse_file($file);
-            case self::CONF_TYPE_XML:
-                return (array)simplexml_load_file($file);
-            case self::CONF_TYPE_JSON:
-                return json_decode(file_get_contents($file), true);
-            default:
-                if (isset($parser)) {
-                    return $parser($file);
-                } else {
-                    return Exception::throwing('无法解析配置文件');
-                }
-        }
     }
 }

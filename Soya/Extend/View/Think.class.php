@@ -9,6 +9,7 @@
 namespace Soya\Extend\View;
 use Soya\Core\Exception;
 use Soya\Core\Storage;
+use Soya\Core\URI;
 use Soya\Util\SEK;
 
 /**
@@ -250,6 +251,11 @@ class Think implements ViewInterface{
      * @return void
      */
     private function replaceTemplateString(&$tmplContent){
+        //模板常量
+        defined('__ROOT__') or define('__ROOT__',URI::getBasicUrl());
+        defined('__MODULE__') or define('__MODULE__',__PUBLIC__.'/'.REQUESR_MODULE);
+        defined('__CONTROLLER__') or define('__CONTROLLER__',__MODULE__.'/'.REQUESR_CONTROLLER);
+        defined('__ACTION__') or define('__ACTION__',__CONTROLLER__.'/'.REQUESR_ACTION);
         $replace =  array(
             '__PUBLIC__'    =>  __PUBLIC__,
             '__ROOT__'      =>  __ROOT__,       // 当前网站地址
@@ -461,7 +467,6 @@ class Think implements ViewInterface{
                 }
                 $n1 = empty($val['attr'])?'(\s*?)':'\s([^'.$end.']*)';
 //                $this->tempVar = array($tagLib, $tag);
-
                 if (!$closeTag){
                     $patterns       = '/'.$begin.$parseTag.$n1.'\/(\s*?)'.$end.'/is';
                     $content        = preg_replace_callback($patterns, function($matches) use($that,$tag){
@@ -1356,8 +1361,8 @@ class Think implements ViewInterface{
         }else{
             // 命名空间导入模式 默认是js
             $type       =   $type?$type:(!empty($tag['type'])?strtolower($tag['type']):'js');
-//            $basepath   =   !empty($tag['basepath'])?$tag['basepath']:__ROOT__.'/Public';
-            $basepath   =   !empty($tag['basepath'])?$tag['basepath']:__URI__.'/Public';
+//            $basepath   =   !empty($tag['basepath'])?$tag['basepath']:__PUBLIC__.'/Public';
+            $basepath   =   !empty($tag['basepath'])?$tag['basepath']:__PUBLIC__.'/Public';
             // 命名空间方式导入外部文件
             $array      =   explode(',',$file);
             foreach ($array as $val){
@@ -1480,7 +1485,5 @@ class Think implements ViewInterface{
         $parseStr  .= '<?php } ?>';
         return $parseStr;
     }
-
-
 
 }

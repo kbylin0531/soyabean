@@ -14,11 +14,9 @@
             public_url : '__PUBLIC__',
             debug_on : true
         };
-        soya.init(options).load(cdn['ico'], 'ico');
-        soya.load(cdn['style'], 'css');
+        soya.init(options).load(cdn['ico'], 'ico').load(cdn['style'], 'css');
 
-        var ieVersion = soya.context.ieVersion();
-        if (ieVersion < 9) {
+        if (soya.context.ieVersion() < 9) {
             soya.load(cdn['compatible'], 'js');
         } else {
             soya.load(cdn['performance'], 'js');

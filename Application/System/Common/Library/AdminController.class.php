@@ -7,9 +7,10 @@
  */
 
 namespace Application\System\Common\Library;
-
 use Application\System\Config\Model\MenuModel;
 use Application\System\Member\Common\Logic\LoginLogic;
+use Soya\Core\Configger;
+use Soya\Core\Dispatcher;
 use Soya\Util\SEK;
 
 abstract class AdminController extends CommonController{
@@ -20,8 +21,6 @@ abstract class AdminController extends CommonController{
             $this->go('/Member/Public/login');
         }
     }
-
-
 
     /**
      * @param string|null $template 如果是null,将自动获取调用本方法的名称并去掉开头的Page前缀
@@ -47,7 +46,7 @@ abstract class AdminController extends CommonController{
      * @return array
      */
     private function getCDN(){
-        $solution = ModuleButler::loadConfig('cdn',SEK::CONF_TYPE_PHP,SEK::CALL_PLACE_FURTHER_FORWARD);
+        $solution = Dispatcher::load('cdn',Configger::TYPE_PHP);
 //        \Soya\dumpout($solution);
         return $solution['solution_list'][$solution['active_index']];
     }
@@ -86,6 +85,7 @@ abstract class AdminController extends CommonController{
             'header_menu'   => $memuModel->getHeaderMenuConfig(),
             'sidebar_menu'  => $memuModel->getSidebarMenuConfig(),
         ];
+        \Soya\dumpout($menu);
         return array_merge($pageinfo, $menu);
     }
 

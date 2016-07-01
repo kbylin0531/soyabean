@@ -425,17 +425,14 @@ window.soya = (function(){
                 if(new RegExp("("+ k +")").test(fmt))
                     fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
             }
-
             return fmt;
         },
-        //如果是非IE浏览器,返回的版本号是11
         ieVersion:function () {
-            //IE判断
             var version;
             if(version = navigator.userAgent.toLowerCase().match(/msie ([\d.]+)/)){
                 version = parseInt(version[1]);
             }else{
-                version = 12;
+                version = 11;//如果是其他浏览器，默认判断为版本11
             }
             return version;
         }
@@ -852,7 +849,7 @@ window.soya = (function(){
                 //记录已经加载过的
                 _library.push(path);
             }
-            return soya;
+            return this;
         },
         ready:function (callback) {readyStack.push(callback);}
     };
