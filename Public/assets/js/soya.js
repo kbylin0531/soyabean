@@ -60,7 +60,7 @@ window.soya = (function(){
         };
     }
 
-//-------------------------------------------- sh1 ----------------------------------------------------------------//
+//-------------------------------------------- sha1 ----------------------------------------------------------------//
 
     var options = {
         //公共资源的URL路径
@@ -561,7 +561,7 @@ window.soya = (function(){
                     }
                     cookie = name+"="+value+";expires="+_date.toUTCString();
                 }else{
-                    throw "require the param 3 to be false/undefined/numeric !";
+                    console.log([name, value, expire,path],"require the param 3 to be false/undefined/numeric !");
                 }
                 document.cookie = cookie+path;
             },
@@ -708,15 +708,14 @@ window.soya = (function(){
                 for(var i=0; i < object.length; i++){
                     itemcallback(object[i],i,userdata);
                 }
-                return ;
             }else if(this.isObject(object)){
                 for(var key in object){
                     if(!object.hasOwnProperty(key)) continue;
                     itemcallback(object[key],key,userdata);
                 }
-                return ;
+            }else{
+                console.log(object,"Require an object/array!");
             }
-            throw "Require an object/array!";
         },
         /**
          * 复制一个数组或者对象
@@ -747,7 +746,9 @@ window.soya = (function(){
          */
         checkProperty:function (object, prop) {
             if(!utils.isArray(prop)) prop = [prop];
-            if(undefined === prop) throw "Arguments should not be empty!";
+            if(undefined === prop) {
+                console.log([object, prop],"Arguments should not be empty!")
+            }
             var count = 0;
             for(var i = 0; i < prop.length;i++){
                 if(object.hasOwnProperty(prop[i])) count++;

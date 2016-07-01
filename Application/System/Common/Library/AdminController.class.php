@@ -8,10 +8,11 @@
 
 namespace Application\System\Common\Library;
 
+use Application\System\Config\Model\MenuModel;
 use Application\System\Member\Common\Logic\LoginLogic;
 use Soya\Util\SEK;
 
-class AdminController extends CommonController{
+abstract class AdminController extends CommonController{
 
     public function __construct(){
         parent::__construct(null);
@@ -28,7 +29,7 @@ class AdminController extends CommonController{
      * @param null $compile_id
      * @param null $parent
      */
-    protected function displayManagement($template = null, $cache_id = null, $compile_id = null, $parent = null){
+    protected function show($template = null, $cache_id = null, $compile_id = null, $parent = null){
         //加载模块和菜单
         $this->assign('infos',json_encode([
             'cdn'   => $this->getCDN(),//加载CDN
@@ -46,12 +47,17 @@ class AdminController extends CommonController{
      * @return array
      */
     private function getCDN(){
-        $solution = ModuleButler::loadConfig('cdn');
+        $solution = ModuleButler::loadConfig('cdn',SEK::CONF_TYPE_PHP,SEK::CALL_PLACE_FURTHER_FORWARD);
+//        \Soya\dumpout($solution);
         return $solution['solution_list'][$solution['active_index']];
     }
 
     protected function getUserInfo(){
-        return ModuleButler::loadConfig('_user');
+        $usrinfo = LoginLogic::getInstance()->getLoginInfo(false);
+        if(null === $usrinfo){
+            $this->redirect('/System/Member/Public/login'.urlencode('无法从会话中读取登录信息，请登录！'));//跳转到登录界面
+        }
+        return $usrinfo;
     }
     /**
      * 分配管理员页面信息
@@ -67,20 +73,20 @@ class AdminController extends CommonController{
      * @return array
      */
     private function getPageInfo(){
-//        $memuModel = new MenuModel();
-//        $pageinfo = [
-//            //head部分
-//            'title' => 'KbylinFramework',
-//            'coptright' => ' 2014 © YZ',
-//            //body部分
-//            'logo'  => 'Dazz',
-//        ];
-//        $menu = [
-//            'menuitem_id'   => 560,//for finding his parent
-//            'header_menu'   => $memuModel->getHeaderMenuConfig(),
-//            'sidebar_menu'  => $memuModel->getSidebarMenuConfig(),
-//        ];
-//        return array_merge($pageinfo, $menu);
+        $memuModel = new MenuModel();
+        $pageinfo = [
+            //head部分
+            'title' => 'KbylinFramework',
+            'coptright' => ' 2014 © YZ',
+            //body部分
+            'logo'  => 'Dazz',
+        ];
+        $menu = [
+            'menuitem_id'   => 560,//for finding his parent
+            'header_menu'   => $memuModel->getHeaderMenuConfig(),
+            'sidebar_menu'  => $memuModel->getSidebarMenuConfig(),
+        ];
+        return array_merge($pageinfo, $menu);
     }
 
     /**

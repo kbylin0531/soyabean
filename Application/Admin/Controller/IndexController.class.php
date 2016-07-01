@@ -12,7 +12,7 @@ use Application\System\Common\Library\AdminController;
 class IndexController extends AdminController{
 
     public function index(){
-        $this->display();
+        $this->show();
     }
 
 }

@@ -30,6 +30,8 @@ class MemberModel extends Model {
         return $result;
     }
 
+
+
     /**
      * 检查登陆
      * @param string $account 账户名称，可以是用户名、邮箱和手机号

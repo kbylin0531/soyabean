@@ -10,7 +10,7 @@ namespace Application\System\Common\Library;
 use Soya\Extend\Controller;
 use Soya\Extend\Response;
 
-class CommonController extends Controller {
+abstract class CommonController extends Controller {
 
     public function PageIconSelection(){
         $this->display();
@@ -19,4 +19,5 @@ class CommonController extends Controller {
     protected function go($path,$base=__ROOT__){
         $this->redirect($base.$path);
     }
+
 }

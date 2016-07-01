@@ -15,13 +15,7 @@ use Soya\Extend\Model;
  */
 class MenuItemModel extends Model {
 
-    const TABLE_NAME = 'kl_menu_item';
-    const TABLE_FIELDS = [
-        'id'        => null,
-        'title'     => null,
-        'value'     => null,
-        'icon'      => null,
-    ];
+    protected $tablename = 'sy_menu_item';
 
     /**
      * update the menu item by id
@@ -34,8 +28,8 @@ class MenuItemModel extends Model {
     public function updateMenuItemById($id,$title,$icon,$href){
         return $this->fields([
             'title' => $title,
-            'icon' => $icon,
-            'href' => $href,
+            'icon'  => $icon,
+            'value' => $href,
         ])->where('id = '.intval($id))->update();
     }
 
@@ -64,7 +58,7 @@ class MenuItemModel extends Model {
         $result = $this->fields([
             'id'        => $id, // 前台保证唯一
             'title'     => $title,
-            'href'     => $href,
+            'value'     => $href,
             'icon'      => $icon,
         ])->create();
         return $result;
@@ -95,7 +89,7 @@ class MenuItemModel extends Model {
     public function updateMenuItem($id,$title,$href,$icon){
         return $this->fields([
             'title'     => $title,
-            'href'     => $href,
+            'value'     => $href,
             'icon'      => $icon,
         ])->where('id='.intval($id))->update();
     }

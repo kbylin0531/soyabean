@@ -251,7 +251,7 @@ class Think implements ViewInterface{
      */
     private function replaceTemplateString(&$tmplContent){
         $replace =  array(
-            '__URI__'       =>  __URI__,
+            '__PUBLIC__'    =>  __PUBLIC__,
             '__ROOT__'      =>  __ROOT__,       // 当前网站地址
             '__MODULE__'    =>  __MODULE__,
             '__CONTROLLER__'=>  __CONTROLLER__,

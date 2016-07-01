@@ -16,21 +16,14 @@ use Soya\Extend\Model;
  */
 class MenuModel extends Model{
 
-    const TABLE_NAME = 'kl_config_menu';
-    const TABLE_FIELDS = [
-        'id'        => null,
-        'title'     => null,
-        'value'     => null,
-        'order'     => null,
-        'icon'      => null,
-    ];
+    protected $tablename = 'sy_menu';
 
     /**
      * 获取顶部菜单设置
      * @return array|false 错误发生时返回false
      */
     public function getHeaderMenuConfig(){
-        $config = $this->where('id = 1 and parent = 1')->select();
+        $config = $this->where('id = 1')->select();
         if($config){
             $config =  $this->applyMenuItem($config);
             if (isset($config[1]['config'])) {
@@ -44,7 +37,7 @@ class MenuModel extends Model{
      * @return array|bool
      */
     public function getSidebarMenuConfig(){
-        $configs = $this->where('id != 1 and parent != 1')->select();
+        $configs = $this->where('id <> 1')->select();
 
         if($configs){
             return $this->applyMenuItem($configs);

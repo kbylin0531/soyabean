@@ -119,7 +119,7 @@ class Soya {
         }
 
         defined('P_APP') or define('P_APP', PATH_BASE.self::$_convention['APP_PATH']);
-        define('__URI__',dirname($_SERVER['SCRIPT_NAME']).'/');
+        define('__PUBLIC__',dirname($_SERVER['SCRIPT_NAME']).'/');
 
         //error  display
         error_reporting(DEBUG_MODE_ON?-1:E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);//php5.3version use code: error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_USER_NOTICE);
@@ -140,8 +140,7 @@ class Soya {
     final public static function start(array $config=null){
         self::$_flags['INITED'] or self::init($config);
         $result = self::parseUri();
-        $result = self::dispatch($result['m'],$result['c'],$result['a']);
-
+        self::dispatch($result['m'],$result['c'],$result['a']);
     }
 
     /**

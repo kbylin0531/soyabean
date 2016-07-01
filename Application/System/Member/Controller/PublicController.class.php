@@ -10,7 +10,6 @@ use Application\System\Common\Library\CommonController;
 use Application\System\Member\Common\Logic\LoginLogic;
 use Soya\Core\URI;
 use Soya\Extend\Response;
-use Soya\Util\UserAgent;
 
 /**
  * Class PublicController 公共可以访问的控制器
