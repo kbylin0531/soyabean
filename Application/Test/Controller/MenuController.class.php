@@ -58,9 +58,12 @@ class MenuController {
 //        \Soya\dump($this->model->getSidebarMenu());
 //        \Soya\dump($this->model->selectSideMenu());
 //        \Soya\dump($this->model->deleteSideMenu(12));
-        \Soya\dump($this->model->updateSideMenu([
+        \Soya\dump($this->model->updateMenu([
             'id'    => 2,
             'value' => serialize([
+                [
+                    'id'    => 2,
+                ],
                 [
                     'id'    => 1,
                 ]
@@ -88,14 +91,6 @@ class MenuController {
 //        $value = [
 //            [
 //                'id'    => 2,
-//                'children'  => [
-//                    [
-//                        'id'    => 3,
-//                    ],
-//                    [
-//                        'id'    => 4,
-//                    ],
-//                ]
 //            ],
 //            [
 //                'id'    => 5,
@@ -105,14 +100,22 @@ class MenuController {
 //                        'children'  => [
 //                            [
 //                                'id'    => 7,
+//                                'children'  => [
+//                                    [
+//                                        'id'    => 3,
+//                                    ],
+//                                    [
+//                                        'id'    => 4,
+//                                    ],
+//                                ]
 //                            ],
 //                        ]
 //                    ],
 //                ]
 //            ],
 //        ];
-//        \Soya\dump(serialize($value),$this->model->updateSideMenu([
-//            'id'    => 7,
+//        \Soya\dump(serialize($value),$this->model->updateMenu([
+//            'id'    => 1,
 //            'value' => serialize($value),
 //        ]));
 //        \Soya\dump($this->model->deleteSideMenu(6));

@@ -1,7 +1,7 @@
 /**
  * Created by kbylin on 17/05/16.
  */
-dazz.ready(function () {
+soya.ready(function () {
     "use strict";
 
     // console.log(location);
@@ -102,12 +102,12 @@ dazz.ready(function () {
             menuitem:{
                 //init the menuitem edit
                 initMenuItemEdit:function (element,obj) {
-                    if(!dazz.utils.isObject(obj)){
+                    if(!soya.utils.isObject(obj)){
                         // console.log(obj);
                         return Dazzling.toast.error('You click the wrong things!');
                     }
                     var form = MenuItemAddModal.getElement("#MenuItemAddForm");
-                    dazz.utils.each(obj,function (value, key) {
+                    soya.utils.each(obj,function (value, key) {
                         var input = form.find("[name="+key+"]");
                         input.val(value);
                         if(input.attr('name') === 'id') input.attr('readonly','readonly');
@@ -146,7 +146,7 @@ dazz.ready(function () {
         $("#addTop").click(function () {
             operator.updateIdForCreate();
             MenuItemAddModal.title('添加顶部菜单').show().onConfirm(function () {
-                var obj = dazz.utils.parseUrl(Dazzling.form.serialize("#MenuItemAddForm"));
+                var obj = soya.utils.parseUrl(Dazzling.form.serialize("#MenuItemAddForm"));
                 var item = HeaderNestable.createItem(obj);
                 if(!item) Dazzling.toast.error('添加失败!');
 

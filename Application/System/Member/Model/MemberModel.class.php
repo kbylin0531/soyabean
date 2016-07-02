@@ -52,7 +52,7 @@ class MemberModel extends Model {
             default:
                 $where['username'] = $account;
         }
-        $user = $this->where($where)->find();
+        $user = $this->fields('avatar,birthday,email,id,nickname,phone,last_login_ip,last_login_time,sex,username,password')->where($where)->find();
         if(false === $user){
             if(!DEBUG_MODE_ON){
                 Logger::getInstance()->write($this->error());
@@ -65,6 +65,7 @@ class MemberModel extends Model {
         }else{
 //            \Soya\dumpout($password,$user);
             if($password === $user['password']){
+                unset($user['password']);
                 return $user;
             }else{
                 $this->error = '密码不正确！';

@@ -253,9 +253,9 @@ class Think implements ViewInterface{
     private function replaceTemplateString(&$tmplContent){
         //模板常量
         defined('__ROOT__') or define('__ROOT__',URI::getBasicUrl());
-        defined('__MODULE__') or define('__MODULE__',__PUBLIC__.'/'.REQUESR_MODULE);
-        defined('__CONTROLLER__') or define('__CONTROLLER__',__MODULE__.'/'.REQUESR_CONTROLLER);
-        defined('__ACTION__') or define('__ACTION__',__CONTROLLER__.'/'.REQUESR_ACTION);
+        defined('__MODULE__') or define('__MODULE__',__PUBLIC__.'/'.REQUEST_MODULE);
+        defined('__CONTROLLER__') or define('__CONTROLLER__',__MODULE__.'/'.REQUEST_CONTROLLER);
+        defined('__ACTION__') or define('__ACTION__',__CONTROLLER__.'/'.REQUEST_ACTION);
         $replace =  array(
             '__PUBLIC__'    =>  __PUBLIC__,
             '__ROOT__'      =>  __ROOT__,       // 当前网站地址

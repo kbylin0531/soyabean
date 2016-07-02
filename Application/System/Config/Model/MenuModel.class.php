@@ -43,7 +43,7 @@ class MenuModel extends Model{
      * @param array $info
      * @return bool
      */
-    public function updateSideMenu(array $info){
+    public function updateMenu(array $info){
         if(!isset($info)) {
             $this->error = '未设置ID项';
         }
@@ -173,34 +173,39 @@ class MenuModel extends Model{
      * @return array
      */
     private function _applyMenuItem(array $menus){
-        $sorted = [];
+//        $sorted = [];
         if($menus){
             $menuItemModel = new MenuItemModel();
             $items = $menuItemModel->selectMenuItem(true);
 
-//            \Soya\dump($menus,$items);
             if($items){
                 foreach ($menus as &$menu){
+//                    \Soya\dump($menu,$items);
                     $value = $menu['value'];
                     if($value){
-                        $menu = is_string($menu['value'])?@unserialize($menu['value']):$menu['value'];
+                        $menu['value'] = is_string($menu['value'])?@unserialize($menu['value']):$menu['value'];
 //                        \Soya\dumpout($menu,$items);
-                        $this->_arrangeMenu($menu, $items);
+                        if(is_array($menu['value']) and $menu['value']){
+                            $this->_arrangeMenu($menu['value'], $items);
+                        }else{
+                            $menu['value'] = [];
+                        }
                     }
                 }
             }
-//            \Soya\dumpout($menus,$items);
         }
-        return $sorted;
+//        \Soya\dumpout($menus,$sorted);
+        return $menus;
     }
 
     /**
      * apply menuitem to menu config
-     * @param array $value
+     * @param array $menuitems
      * @param array $items
      */
-    private function _arrangeMenu(array &$value, array &$items){
-        foreach ($value as &$item){
+    private function _arrangeMenu(array &$menuitems, array &$items){
+        foreach ($menuitems as &$item){
+//            \Soya\dumpout($item,$items);
             $id = $item['id'];
             if(isset($items[$id])){
                 $item = array_merge($item,$items[$id]);

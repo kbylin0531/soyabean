@@ -68,6 +68,12 @@ class Dispatcher extends \Soya {
 
         //模块检测
         is_dir(PATH_BASE."Application/{$modules}") or ModuleNotFoundException::throwing($modules);
+
+        //在执行方法之前定义常量,为了能在控制器的构造函数中使用这三个常量
+        define('REQUEST_MODULE',$modules);//请求的模块
+        define('REQUEST_CONTROLLER',$ctrler);//请求的控制器
+        define('REQUEST_ACTION',$action);//请求的操作
+
         //控制器名称及存实性检测
         $className = "Application\\{$modules}\\Controller\\{$ctrler}Controller";
         class_exists($className) or ControllerNotFoundException::throwing($modules,$className);
@@ -75,11 +81,6 @@ class Dispatcher extends \Soya {
         //方法检测
         method_exists($classInstance,$action) or ActionNotFoundException::throwing($modules,$className,$action);
         $method = new ReflectionMethod($classInstance, $action);
-
-        //在执行方法之前定义常量
-        define('REQUESR_MODULE',$modules);//请求的模块
-        define('REQUESR_CONTROLLER',$ctrler);//请求的控制器
-        define('REQUESR_ACTION',$action);//请求的操作
 
         $result = null;
         if ($method->isPublic() and !$method->isStatic()) {//仅允许非静态的公开方法
@@ -141,8 +142,8 @@ class Dispatcher extends \Soya {
      * @return array
      */
     public static function load($name,$type=Configger::TYPE_PHP){
-        if(!defined('REQUESR_MODULE')) return Exception::throwing('\'load\'必须在\'exec\'方法之后调用!');//前提是正确制定过exec方法
-        $path = PATH_BASE.'Application/'.REQUESR_MODULE.'/Common/Conf/';
+        if(!defined('REQUEST_MODULE')) return Exception::throwing('\'load\'必须在\'exec\'方法之后调用!');//前提是正确制定过exec方法
+        $path = PATH_BASE.'Application/'.REQUEST_MODULE.'/Common/Conf/';
 //        \Soya\dumpout($path);
         $storage = Storage::getInstance();
         if($storage->has($path) === Storage::IS_DIR){

@@ -186,11 +186,11 @@ soya.ready(function () {
                 user: {
                     /**
                      * init user menu with certain config and element on page
-                     * @param conf menu config of an array/object
+                     * @param menu menu config of an array/object
                      */
-                    setMenu: function (conf) {
+                    setMenu: function (menu) {
                         var ele = $(".dropdown-user>.dropdown-menu");
-                        soya.utils.each(conf, function (item) {
+                        soya.utils.each(menu, function (item) {
                             var li = document.createElement('li');
                             var a = document.createElement('a');
                             a.innerHTML = item['title'];
@@ -303,7 +303,7 @@ soya.ready(function () {
                      */
                     load: function (data, activeid) {
                         var env = this;
-                        var result = this.findOuter(data, activeid, 'id');
+                        var result = this.findOuter(data, activeid, 'value');
                         if(false === result){
                             throw "No !!!";
                         }
@@ -323,27 +323,38 @@ soya.ready(function () {
                         });
                         return env;
                     },
-                    findInner: function (items, compval,feature,featurecompcallback) {
-                        feature || (feature = 'id');
-                        for (var i = 0; i < items.length; i++) {
-                            var item = items[i];
-
-                            if(undefined === featurecompcallback){
-                                if (parseInt(item[feature]) === parseInt(compval)) {
-                                    return item;
-                                }
+                    findInner: function (item, compval,feature,featurecompcallback) {
+                        // console.log(item, compval,feature);
+                        feature || (feature = 'value');
+                        var env = this;
+                        if(item) {
+                            if(soya.utils.isArray(item)){
+                                return soya.utils.each(item,function (subitem) {
+                                    // console.log(subitem);
+                                    var result = env.findInner(subitem, compval,feature,featurecompcallback);
+                                    // console.log(result);
+                                    if (result) return result;
+                                });
                             }else{
-                                if(featurecompcallback(item,compval)){
-                                    //return value of true
-                                    // console.log(item,compval);throw "XXX";
-                                    return item;
+                                if(item.hasOwnProperty('value')){
+                                    var value = item['value'];//对发现的值进行比较
+                                    console.log(item,value,compval,soya.utils.isFunc(featurecompcallback),value === compval)
+
+                                    if(soya.utils.isFunc(featurecompcallback)){
+                                        if(featurecompcallback(item,compval)) return item;
+                                    }else{
+                                        if (value === compval) {
+                                            // console.log('XXXXXXXXXXXX',item);
+                                            return item;
+                                        }
+                                    }
+
+                                    if (item.hasOwnProperty('children')) {
+                                        var result = env.findInner(item['children'], compval,feature,featurecompcallback);
+                                        // console.log(result);
+                                        if (result) return result;
+                                    }
                                 }
-                            }
-                            if (item.hasOwnProperty('children')) {
-                                // console.log(item.children,id2)
-                                var result = this.findInner(item.children, compval,feature,featurecompcallback);
-                                // console.log(result)
-                                if (result) return result;
                             }
                         }
                         return false;
@@ -357,17 +368,19 @@ soya.ready(function () {
                      * @returns {*} return the index while find but false on failure
                      */
                     findOuter: function (menus, compval,feature,featurecompcallback) {
-                        for (var x in menus) {
-                            if (!menus.hasOwnProperty(x)) continue;
-                            var menu = menus[x];
-                            var menuconfig = menu.config;
-                            // console.log(menu,menuconfig,compval,feature);
-                            var result = this.findInner(menuconfig, compval,feature,featurecompcallback);
-                            if(false !== result){
-                                return [x,result];
+                        var env = this;
+                        var result = soya.utils.each(menus,function (menu,id) {
+                            if(menu.hasOwnProperty('value') && menu['value']){
+                                // console.log(menu['value'], compval);
+                                var result = env.findInner(menu['value'], compval,feature,featurecompcallback);
+                                // console.log(result)
+                                if(false !== result){
+                                    return [id,result];
+                                }
                             }
-                        }
-                        return false;
+                        });
+                        console.log('YYYYYYYYYYYYYY',result);
+                        return result !== undefined?result:false;
                     }
                 }
             };
@@ -376,7 +389,7 @@ soya.ready(function () {
                 var target = arguments[0];
                 for(var i = 1 ; i < arguments.length;i++){
                     var element = arguments[i];
-                    element = GenKits.toJquery(element);
+                    element = util.toJquery(element);
                     height -= element.outerHeight();
                     console.log(height)
                 }
@@ -441,7 +454,7 @@ soya.ready(function () {
 
                 init: function (selector) {
                     if (undefined === selector) selector = '.page-toolbar .dropdown-menu';//默认的选择器
-                    !this.page_action_list && (this.page_action_list = GenKits.toJquery(selector));
+                    !this.page_action_list && (this.page_action_list = util.toJquery(selector));
                 },
                 page_action_list: null,
                 //注册操作:操作名称,点击时候的回调函数
@@ -478,40 +491,53 @@ soya.ready(function () {
         })();
 
         //general kits
-        var GenKits = (function () {
+        var util = (function () {
             return {
-                autofill: function (ids, valmap) {
-                    soya.utils.each(ids, function (id) {
-                        if (valmap.hasOwnProperty(id)) {
-                            switch (typeof valmap[id]) {
-                                case 'string':
-                                    if (id.indexOf('.') >= 0) {
-                                        //set attribute for certain id
-                                        var temp = id.split('.');
-                                        $("#" + temp[0]).attr(temp[1], valmap[id]);
-                                    } else {
-                                        //set inner html
-                                        $("#" + id).html(valmap[id])
-                                    }
-                                    break;
-                            }
+                /**
+                 * 按图（索骥）
+                 * 自动按照键值对映射将选择器的属性填写到指定的元素中
+                 * @param selectores 例如：["avatar.src" , ".avatar.src" ,".avatar" , "avatar"]
+                 * @param kvmap 例如： {id: "1", username: "admin", sex: "1", nickname: "Administrator", phone: "15658070289"…}
+                 */
+                antu: function (selectores, kvmap) {
+                    // console.log(selectores,kvmap);
+                    soya.utils.each(selectores, function (id) {
+                        var index = id.indexOf('.');
+                        var selector = true;//id selector
+                        if(-1 === index){
+                            //只是设置innerHtml
+                            kvmap.hasOwnProperty(id) && $("#" + id).html(kvmap[id])
+                        }else if(0 === index){//在'ID'前面加'.'可以将之声明为类选择器
+                            var len = id.length;
+                            id = id.substr(1,len);
+                            selector = false;//class selector
+                        }
+                        var temp = id.split('.');
+                        if(kvmap.hasOwnProperty(temp[0])){
+                            selector = selector?$("#" + temp[0]):$("." + temp[0]);
+                            selector.attr(temp[1], kvmap[temp[0]]);
                         }
                     });
                 },
                 toJquery: function (selector) {
-                    if (typeof selector === 'string') {
-                        return $(selector);
-                    } else if (typeof selector === 'object') {
-                        if (selector instanceof HTMLElement) {
+                    switch (typeof selector){
+                        case 'object':
+                            if (selector instanceof HTMLElement) {
+                                return $(selector);
+                            } else if (selector instanceof jQuery) {
+                                return selector;
+                            }
+                            break;
+                        case 'string':
                             return $(selector);
-                        } else if (selector instanceof jQuery) {
-                            return selector;
-                        }
                     }
-                    console.log("to jquery failed",selector);
-                    throw "Genkits.toJquery!";
+                    console.log(selector);
+                    throw "错误的数据类型";
                 },
-                _lqt : 0,//last request time
+                /**
+                 * last request time
+                 */
+                _lqt : 0,
                 /**
                  * @param url 请求地址
                  * @param data 请求数据对象
@@ -623,7 +649,7 @@ soya.ready(function () {
                 //设置体部分
                 var body = $('<div class="modal-body"></div>');
                 body.appendTo(content);
-                body.append(GenKits.toJquery(selector));
+                body.append(util.toJquery(selector));
 
                 //设置足部
                 var cancel = $('<button type="button" class="btn btn-default cancelbtn" data-dismiss="modal">' + config['cancelText'] + '</button>');
@@ -706,15 +732,17 @@ soya.ready(function () {
                 //init auto adjuest
                 //****************************************
                 $(window).resize(function () {
-                    if (isIE8 && (currentHeight == document.documentElement.clientHeight)) return; //quite event since only body resized not window.
+                    //quite event since only body resized not window.
+                    if (isIE8 && (currentHeight == document.documentElement.clientHeight)) return;
                     if (resizehandler) clearTimeout(resizehandler);
                     resizehandler = setTimeout(function () {
                         page.resizer.exec();
                         // for (var i = 0; i < resizeHandlers.length; i++)  resizeHandlers[i].call();//执行调整函数
                     }, 75); // 等待window调整完成
-                    isIE8 && (currentHeight = document.documentElement.clientHeight); // store last body client height
+                    // store last body client height
+                    // 注意 document.body.clientHeight 和 document.documentElement.clientHeight 的区别
+                    isIE8 && (currentHeight = document.documentElement.clientHeight);
                 });
-
                 //****************************************
                 //init sidebar
                 //****************************************
@@ -731,15 +759,15 @@ soya.ready(function () {
                 // init others
                 //****************************************
                 page.header.setSearchHandler(); // handles horizontal menu
-
-                
                 page.resizer.push(page.behavior.autoContentHeight);
 
                 var userinfo = infos['user'];
-                GenKits.autofill(itemsIds, userinfo);
-                page.header.user.setMenu(userinfo['menu']);
-
                 var pageinfo = infos['page'];
+
+                util.antu(itemsIds, userinfo);
+
+                page.header.user.setMenu(pageinfo['user_menu']);
+
                 //设置标题
                 pageinfo.hasOwnProperty('title') && page.setTitle(pageinfo['title']);
                 pageinfo.hasOwnProperty('logo') && page.setLogo(pageinfo['logo']);
@@ -748,7 +776,7 @@ soya.ready(function () {
                 //处理顶部菜单
                 page.header.menu.getInstance().load(pageinfo['header_menu']);//.active(headeractiveindex);
 
-                page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['menuitem_id']);//.active(sideractiveindex);
+                page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['request_path']);//.active(sideractiveindex);
 
                 //the real path may be an empty string (while the basic uri is deal in backgroud,this can be set to login with auto jump)
                 var path = soya.context.getPath();
@@ -768,9 +796,9 @@ soya.ready(function () {
                 $(window).trigger('resize');
             },
             //定制的方法,定制过程中避免对jquery中的方法进行修改
-            'post': GenKits.doPost,
+            'post': util.doPost,
             //工具箱
-            'utils': GenKits,
+            'utils': util,
             //页面工具
             'page': page,
             //datatable表格工具,一次只能操作一个表格API对象
@@ -782,7 +810,7 @@ soya.ready(function () {
                 'current_row': null,//当前操作的行,可能是一群行
                 //设置之后的操作所指定的DatatableAPI对象
                 'bind': function (dtJquery, options) {
-                    dtJquery = GenKits.toJquery(dtJquery);
+                    dtJquery = util.toJquery(dtJquery);
                     var newinstance = soya.newInstance(this);
                     newinstance.dtElement = dtJquery;
 
@@ -912,7 +940,7 @@ soya.ready(function () {
                     return instance;
                 },
                 bind: function (selector) {
-                    selector = GenKits.toJquery(selector);
+                    selector = util.toJquery(selector);
                     selector.contextmenu(this.target);
                 }
             },
@@ -959,7 +987,7 @@ soya.ready(function () {
                 },
                 //fetch an url serialise from a form
                 'serialize': function (selector) {
-                    selector = GenKits.toJquery(selector);
+                    selector = util.toJquery(selector);
                     return selector.serialize();
                 }
             },
@@ -1039,7 +1067,7 @@ soya.ready(function () {
                 },
                 //active the element
                 active: function (element) {
-                    element = GenKits.toJquery(element);
+                    element = util.toJquery(element);
                     // this.passiveAll();//cancel all active status
                     // console.log(element,element.hasClass('dd3-content'));
                     if (element.hasClass('dd3-content')) {
@@ -1157,7 +1185,7 @@ soya.ready(function () {
                 onItemClick: function (data, element, event) {
                 },
                 attachTo: function (selector, append) {
-                    selector = GenKits.toJquery(selector);
+                    selector = util.toJquery(selector);
                     if (append) {
                         selector.append(this.target);
                     } else {
@@ -1166,7 +1194,7 @@ soya.ready(function () {
                     return this;
                 },
                 prependTo: function (attatchment) {
-                    attatchment = GenKits.toJquery(attatchment);
+                    attatchment = util.toJquery(attatchment);
                     attatchment.html('');
                     if (attatchment.length) {
                         attatchment.prepend(this.target);
@@ -1175,7 +1203,7 @@ soya.ready(function () {
                     return false;
                 },
                 appendTo: function (attatchment) {
-                    attatchment = GenKits.toJquery(attatchment);
+                    attatchment = util.toJquery(attatchment);
                     attatchment.html('');
                     if (attatchment.length) {
                         attatchment.appendTo(this.target);
@@ -1244,7 +1272,7 @@ soya.ready(function () {
                 _createNode4Content: function (config) {
                     if (!config.hasOwnProperty('id') || !config.hasOwnProperty('content')) return Dazzling.toast.warning('Tab must be related with an ID!');
                     var div = $('<div class="tab-pane fade" id="' + config['id'] + '"></div>');
-                    var content = GenKits.toJquery(config['content']);
+                    var content = util.toJquery(config['content']);
                     div.append(content);
                     return div;
                 },
@@ -1252,7 +1280,7 @@ soya.ready(function () {
                     var nav = this._createNav(config);
                     var content = this._createContent(config);
                     if (attachment) {
-                        attachment = GenKits.toJquery(attachment);
+                        attachment = util.toJquery(attachment);
                         attachment.html('');
                         attachment.append(nav).append(content);
                     }

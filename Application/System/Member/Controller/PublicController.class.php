@@ -8,7 +8,6 @@
 namespace Application\System\Member\Controller;
 use Application\System\Common\Library\CommonController;
 use Application\System\Member\Common\Logic\LoginLogic;
-use Soya\Core\URI;
 use Soya\Extend\Response;
 
 /**
@@ -24,9 +23,8 @@ class PublicController extends CommonController {
     public function login($username=null,$password=null,$remember=false){
         if(IS_METHOD_POST){
             $result = LoginLogic::getInstance()->login($username,$password,$remember);
-//            \Soya\dumpout($result,__CONTROLLER__.'/login#'.urlencode($result));
             if(is_string($result)){
-                URI::redirect(__CONTROLLER__.'/login#'.urlencode($result));
+                $this->redirect('/System/Member/Public/login#'.urlencode($result));
             }
             $this->redirect('/Admin/Index/index');
             exit();
@@ -39,7 +37,7 @@ class PublicController extends CommonController {
      */
     public function logout(){
         LoginLogic::getInstance()->logout();
-        $this->redirect(__CONTROLLER__.'/login');
+        $this->redirect('/System/Member/Public/login');
     }
 
 

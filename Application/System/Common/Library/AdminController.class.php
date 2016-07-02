@@ -23,6 +23,7 @@ abstract class AdminController extends CommonController{
      */
     public function __construct(){
         parent::__construct(null);
+        define('REQUEST_PATH','/'.REQUEST_MODULE.'/'.REQUEST_CONTROLLER.'/'.REQUEST_ACTION);
         if(!LoginLogic::getInstance()->isLogin()){
             $this->go('/System/Member/Public/login');
         }
@@ -87,14 +88,19 @@ abstract class AdminController extends CommonController{
             'title' => 'KbylinFramework',
             'coptright' => ' 2014 © YZ',
             //body部分
-            'logo'  => 'Dazz',
-        ];
-        $menu = [
-            'menuitem_id'   => 560,//for finding his parent
+            'logo'  => 'Soya',
+            'request_path'   => REQUEST_PATH,//for finding his parent ???
             'header_menu'   => $memuModel->getHeaderMenu(),
             'sidebar_menu'  => $memuModel->getSidebarMenu(),
+            'user_menu'     => [
+                [
+                    'title' => '解除登录',
+                    'href'  => '/System/Member/Public/logout',
+                ]
+            ],
         ];
-        return array_merge($pageinfo, $menu);
+//        \Soya\dumpout($pageinfo['sidebar_menu']);
+        return $pageinfo;
     }
 
     /**

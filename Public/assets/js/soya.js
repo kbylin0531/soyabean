@@ -688,7 +688,14 @@ window.soya = (function(){
         isArray  : function (el) {
             return Object.prototype.toString.call(el) === '[object Array]';
         },
-
+        /**
+         * 判断元素是否是一个函数
+         * @param el
+         * @returns {boolean}
+         */
+        isFunc:function (el) {
+            return '[object Function]' === Object.prototype.toString.call(el);
+        },
         //注意安全性问题,并不推荐使用
         toObject:function (str) {
             if(str instanceof Object) return str;/* 已经是对象的清空下直接返回 */
@@ -697,21 +704,26 @@ window.soya = (function(){
         /**
          * 遍历对象
          * @param object {{}|[]} 待遍历的对象或者数组
-         * @param itemcallback
+         * @param itemcallback 返回
          * @param userdata
          */
         each:function (object,itemcallback,userdata) {
+            var result = undefined;
             if(this.isArray(object)){
                 for(var i=0; i < object.length; i++){
-                    itemcallback(object[i],i,userdata);
+                    result = itemcallback(object[i],i,userdata);
+                    if(result === '[break]') break;
+                    if(result !== undefined) return result;//如果返回了什么东西解释实际返回了，当然除了命令外
                 }
             }else if(this.isObject(object)){
                 for(var key in object){
                     if(!object.hasOwnProperty(key)) continue;
-                    itemcallback(object[key],key,userdata);
+                    result = itemcallback(object[key],key,userdata);
+                    if(result === '[break]') break;
+                    if(result !== undefined) return result;
                 }
             }else{
-                console.log(object,"Require an object/array!");
+                console.log(object," is not an object or array,continue!");
             }
         },
         /**
