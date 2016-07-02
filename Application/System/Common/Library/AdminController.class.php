@@ -13,12 +13,18 @@ use Soya\Core\Configger;
 use Soya\Core\Dispatcher;
 use Soya\Util\SEK;
 
+/**
+ * Class AdminController
+ * @package Application\System\Common\Library
+ */
 abstract class AdminController extends CommonController{
-
+    /**
+     * AdminController constructor.
+     */
     public function __construct(){
         parent::__construct(null);
         if(!LoginLogic::getInstance()->isLogin()){
-            $this->go('/Member/Public/login');
+            $this->go('/System/Member/Public/login');
         }
     }
 
@@ -51,6 +57,9 @@ abstract class AdminController extends CommonController{
         return $solution['solution_list'][$solution['active_index']];
     }
 
+    /**
+     * @return array|null
+     */
     protected function getUserInfo(){
         $usrinfo = LoginLogic::getInstance()->getLoginInfo(false);
         if(null === $usrinfo){
@@ -82,10 +91,9 @@ abstract class AdminController extends CommonController{
         ];
         $menu = [
             'menuitem_id'   => 560,//for finding his parent
-            'header_menu'   => $memuModel->getHeaderMenuConfig(),
-            'sidebar_menu'  => $memuModel->getSidebarMenuConfig(),
+            'header_menu'   => $memuModel->getHeaderMenu(),
+            'sidebar_menu'  => $memuModel->getSidebarMenu(),
         ];
-        \Soya\dumpout($menu);
         return array_merge($pageinfo, $menu);
     }
 

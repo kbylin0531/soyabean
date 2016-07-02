@@ -62,6 +62,10 @@ class MenuModel extends Model{
         return $this->fields($info)->where('id = '.intval($id))->update();
     }
 
+    /**
+     * @param $id
+     * @return bool
+     */
     public function deleteSideMenu($id){
         $result = $this->fields('value')->where('id = '.intval($id))->find();
         if(false === $result){
@@ -88,10 +92,12 @@ class MenuModel extends Model{
     /**
      * 获取全部的菜单项目
      * @param bool $idaskey
+     * @param bool $onlyside
      * @return array|bool
      */
-    public function selectSideMenu($idaskey=false){
-        $list = $this->where('status = 1')->select();
+    public function selectMenus($idaskey=false,$onlyside=false){
+        $where = $onlyside?'status = 1 and id > 1':'status = 1';
+        $list = $this->where($where)->select();
         if($list){
             $temp = [];
             foreach ($list as &$item){
@@ -117,11 +123,11 @@ class MenuModel extends Model{
      * 获取顶部菜单设置
      * @return array|false 错误发生时返回false
      */
-    public function getHeaderMenuConfig(){
-        $config = $this->selectSideMenu(true);
-        if($config){
-            $header = $config[1]['value'];
-            $this->sortMenu($header,$config);
+    public function getHeaderMenu(){
+        $menus = $this->selectMenus(true,false);
+        if($menus){
+            $header = $menus[1]['value'];
+            $this->_sortHeaderMenu($header,$menus);
             return $header;
         }
         return false;
@@ -132,14 +138,14 @@ class MenuModel extends Model{
      * @param $header
      * @param $others
      */
-    private function sortMenu(&$header,&$others){
+    private function _sortHeaderMenu(&$header,&$others){
         if(!isset($header['id'])){//是列表
             foreach ($header as &$item){
                 if(isset($item['id'])){
-                    $this->sortMenu($item,$others);
+                    $this->_sortHeaderMenu($item,$others);
                 }
                 if(isset($item['children'])){
-                    $this->sortMenu($item['children'],$others);
+                    $this->_sortHeaderMenu($item['children'],$others);
                 }
             }
         }else{//是单个菜单项目
@@ -153,73 +159,54 @@ class MenuModel extends Model{
     /**
      * @return array|bool
      */
-    public function getSidebarMenuConfig(){
-        $configs = $this->where('id <> 1')->select();
-
-        if($configs){
-            return $this->applyMenuItem($configs);
+    public function getSidebarMenu(){
+        $sides = $this->selectMenus(true,true);
+        if($sides){
+            return $this->_applyMenuItem($sides);
         }
         return false;
     }
 
     /**
-     * get all menu config with arranged
-     * @return array|bool return array if success while false on failed
-     */
-    public function getMenuConfig(){
-        $configs = $this->select();
-        if(false === $configs or empty($configs)){
-            return false;
-        }else{
-            return $this->applyMenuItem($configs);
-        }
-    }
-
-    /**
      * 将菜单项配置应用到菜单配置中
-     * @param array $menuconf 菜单项配置
-     * @return array|bool
+     * @param array $menus 菜单项配置
+     * @return array
      */
-    private function applyMenuItem(array $menuconf){
-        $newconf = [];
-        if($menuconf){
+    private function _applyMenuItem(array $menus){
+        $sorted = [];
+        if($menus){
             $menuItemModel = new MenuItemModel();
             $items = $menuItemModel->selectMenuItem(true);
 
-            \Soya\dumpout($items);
-            if(empty($items)) return false;
-//            dumpout($configs,$items);
-            foreach ($menuconf as &$config){
-                $parent = $config['parent'];
-                $title  = $config['title'];
-
-                if(!empty($config['value'])){
-                    $config = unserialize($config['value']);
-                    $this->_arrangeMenu($config, $items);
-                }else{
-                    $config = [];
+//            \Soya\dump($menus,$items);
+            if($items){
+                foreach ($menus as &$menu){
+                    $value = $menu['value'];
+                    if($value){
+                        $menu = is_string($menu['value'])?@unserialize($menu['value']):$menu['value'];
+//                        \Soya\dumpout($menu,$items);
+                        $this->_arrangeMenu($menu, $items);
+                    }
                 }
-                $newconf[$parent] = [
-                    'title' => $title,
-                    'config'=> $config,
-                ];
             }
+//            \Soya\dumpout($menus,$items);
         }
-        return $newconf;
+        return $sorted;
     }
 
     /**
      * apply menuitem to menu config
-     * @param array $config
+     * @param array $value
      * @param array $items
      */
-    private function _arrangeMenu(array &$config,array $items){
-        foreach ($config as &$configitem){
-            $id = $configitem['id'];
-            if(!isset($items[$id])) continue;
-            $configitem = array_merge($configitem,$items[$id]);
-            if(isset($configitem['children'])){
-                $this->_arrangeMenu($configitem['children'],$items);
+    private function _arrangeMenu(array &$value, array &$items){
+        foreach ($value as &$item){
+            $id = $item['id'];
+            if(isset($items[$id])){
+                $item = array_merge($item,$items[$id]);
+                if(isset($item['children'])){
+                    $this->_arrangeMenu($item['children'],$items);
+                }
             }
         }
     }

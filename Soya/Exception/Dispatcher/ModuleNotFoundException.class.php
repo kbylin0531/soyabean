@@ -6,7 +6,7 @@
  * Time: 12:44
  */
 
-namespace Soya\Exception;
+namespace Soya\Exception\Dispatcher;
 use Soya\Core\Exception;
 
 class ModuleNotFoundException extends Exception {

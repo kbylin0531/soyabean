@@ -121,4 +121,12 @@ class Cacher extends \Soya {
         ++ self::$writeTimes;
         return $this->driver->clean();
     }
+
+    /**
+     * 加载静态输出脚本
+     */
+    public static function loadStatic(){}
+    public static function saveStatic(){}
+    public static function hasStatic(){}
+
 }

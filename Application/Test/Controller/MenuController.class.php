@@ -10,6 +10,10 @@ namespace Application\Test\Controller;
 use Application\System\Config\Model\MenuItemModel;
 use Application\System\Config\Model\MenuModel;
 
+/**
+ * Class MenuController
+ * @package Application\Test\Controller
+ */
 class MenuController {
     /**
      * @var MenuModel
@@ -50,13 +54,18 @@ class MenuController {
 
     public function testMenu(){
 
-        \Soya\dump($this->model->getHeaderMenuConfig());
+//        \Soya\dump($this->model->getHeaderMenu());
+//        \Soya\dump($this->model->getSidebarMenu());
 //        \Soya\dump($this->model->selectSideMenu());
 //        \Soya\dump($this->model->deleteSideMenu(12));
-//        \Soya\dump($this->model->updateSideMenu([
-//            'id'    => 16,
-//            'value' => serialize([]),
-//        ]));
+        \Soya\dump($this->model->updateSideMenu([
+            'id'    => 2,
+            'value' => serialize([
+                [
+                    'id'    => 1,
+                ]
+            ]),
+        ]));
 //        \Soya\dump($this->model->createSidedMenu([
 //            'title' => '其他',
 //            'value' => [

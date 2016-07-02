@@ -7,8 +7,11 @@
  */
 namespace Soya\Core;
 use Exception as phpException;
-use Soya\Util\Response;
 
+/**
+ * Class Exception
+ * @package Soya\Core
+ */
 class Exception extends phpException {
     /**
      * Exception constructor.

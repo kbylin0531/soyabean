@@ -8,9 +8,9 @@
  */
 namespace Soya\Core;
 use ReflectionMethod;
-use Soya\Exception\ActionNotFoundException;
-use Soya\Exception\ConfigNotFoundException;
-use Soya\Exception\ModuleNotFoundException;
+use Soya\Exception\Dispatcher\ActionNotFoundException;
+use Soya\Exception\Dispatcher\ControllerNotFoundException;
+use Soya\Exception\Dispatcher\ModuleNotFoundException;
 use Soya\Util\SEK;
 
 /**
@@ -70,7 +70,7 @@ class Dispatcher extends \Soya {
         is_dir(PATH_BASE."Application/{$modules}") or ModuleNotFoundException::throwing($modules);
         //控制器名称及存实性检测
         $className = "Application\\{$modules}\\Controller\\{$ctrler}Controller";
-        class_exists($className) or ConfigNotFoundException::throwing($modules,$className);
+        class_exists($className) or ControllerNotFoundException::throwing($modules,$className);
         $classInstance =  new $className();
         //方法检测
         method_exists($classInstance,$action) or ActionNotFoundException::throwing($modules,$className,$action);

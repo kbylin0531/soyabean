@@ -2,22 +2,21 @@
 /**
  * Created by linzhv@outlook.com.
  * User: linzh
- * Date: 2016/6/30
- * Time: 20:59
+ * Date: 2016/7/2
+ * Time: 15:16
  */
 
 namespace Application\Admin\Controller;
 use Application\System\Common\Library\AdminController;
 
 /**
- * Class IndexController
+ * Class SystemController 关闭系统设置
  * @package Application\Admin\Controller
  */
-class IndexController extends AdminController{
+class SystemController extends AdminController {
 
-    public function index(){
+    public function menu(){
         $this->show();
     }
-
 
 }

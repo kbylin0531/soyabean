@@ -33,6 +33,10 @@ class MenuItemModel extends Model {
         return $this->fields($info)->where('id = '.intval($id))->update();
     }
 
+    /**
+     * @param array $info
+     * @return bool|int
+     */
     public function createMenuItem(array $info){
         $data = [
             'title' => null,
