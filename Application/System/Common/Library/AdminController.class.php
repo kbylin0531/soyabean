@@ -64,7 +64,7 @@ abstract class AdminController extends CommonController{
     protected function getUserInfo(){
         $usrinfo = LoginLogic::getInstance()->getLoginInfo(false);
         if(null === $usrinfo){
-            $this->redirect('/System/Member/Public/login'.urlencode('无法从会话中读取登录信息，请登录！'));//跳转到登录界面
+            $this->redirect('/System/Member/Public/login#'.urlencode('无法从会话中读取登录信息，请登录！'));//跳转到登录界面
         }
         return $usrinfo;
     }

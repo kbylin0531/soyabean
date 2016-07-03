@@ -17,9 +17,13 @@ soya.ready(function () {
             sizeLG: 1200// large
         };
 
+        var global = {
+            header_active_index:-1,
+            sidebar_active_index:-1
+        };
+
         var thishtml = $('html');
         var thisbody = $("body");
-
 
         //Conponents on page
         var page = (function () {
@@ -170,17 +174,11 @@ soya.ready(function () {
                         });
                         return env;
                     },
-                    /**
-                     * active certain li
-                     * @param idorhref id or href
-                     * @param ishref for judge param 1 is an menu-id or href
-                     */
-                    active: function (idorhref, ishref) {
-                        var blocks = this.target.find(ishref ? 'a[href=' + idorhref + ']' : '[menu-id=' + idorhref + ']');
-                        if (blocks.length) {
-                            blocks.addClass('active');
-                            blocks.parents('#dazz_header_menu li').addClass('active');
-                        }
+                    active:function (index) {
+                        if(undefined === index) index = global.header_active_index;
+                        var menu = page.header.getHeaderMenu().find("[menu-id="+index+"]");
+                        menu.addClass("active");
+                        menu.parents('#dazz_header_menu li').addClass('active');
                     }
                 },
                 user: {
@@ -253,25 +251,26 @@ soya.ready(function () {
                         return instance;
                     },
                     _getAnchor: function (attrs, hasSubmenu) {
-                        hasSubmenu || (hasSubmenu = attrs.hasOwnProperty('childrem'));
-
+                        hasSubmenu || (hasSubmenu = attrs.hasOwnProperty('children'));
                         var a = $(document.createElement('a')).addClass(hasSubmenu ? 'nav-link nav-toggle' : 'nav-link');
 
                         //default icon
-                        if (!attrs.hasOwnProperty('icon')) attrs['icon'] = 'icon-circle-blank';//默认图标
+                        if (!attrs.hasOwnProperty('icon') || !attrs['icon']) attrs['icon'] = 'fa-slack';//默认图标
 
-                        a.append($('<i class="' + attrs['icon'] + '"></i>')).append($('<span class="title"> ' + attrs['title'] + ' </span>'));
+                        //链接
+                        a.append($('<i class="fa ' + attrs['icon'] + '"></i>')).append($('<span class="title"> ' + attrs['title'] + ' </span>'));
 
                         if (hasSubmenu) {
-                            a.append($('<i class="float-right icon-angle-right"></i>'));
+                            //如果有子菜单，追加下拉
+                            a.append($('<i class="float-right fa fa-angle-right"></i>'));
                         } else {
                             //create link for this anchor
-                            if (attrs['href']) {
-                                attrs['href'] = soya.context.getBaseUri() + attrs['href'];
+                            if (attrs['value']) {
+                                attrs['value'] = soya.context.getBaseUri() + attrs['value'];
                             } else {
-                                attrs['href'] = 'javascript:void(0);';
+                                attrs['value'] = 'javascript:void(0);';
                             }
-                            a.attr('href', attrs['href']);
+                            a.attr('href', attrs['value']);
                             a.attr('data-id',attrs['id']);
                         }
 
@@ -298,27 +297,30 @@ soya.ready(function () {
                     /**
                      * load side menu config
                      * @param data sidebar menu config
-                     * @param activeid
+                     * @param path
                      * @returns {Object}
                      */
-                    load: function (data, activeid) {
+                    load: function (data, path) {
                         var env = this;
-                        var result = this.findOuter(data, activeid, 'value');
+                        var result = this.findOuter(data, path, 'value');
                         if(false === result){
                             throw "No !!!";
                         }
-                        // console.log(result);
-                        var active_menu_parent = result[0];
-                        // console.log(data[active_menu_parent]);
-                        data = data[active_menu_parent]['config'];
-                        // console.log(data)
-                        soya.utils.each(data, function (topitemconf) {
-                            var li_navitem = $(document.createElement('li')).addClass('nav-item');
-                            var hasSubmenu = topitemconf.hasOwnProperty('children');
+                        global.header_active_index = result[0];
+                        global.sidebar_active_index = result[1]['id'];
 
-                            var a = env._getAnchor(topitemconf, hasSubmenu);
+                        var sideconf = data[result[0]];
+                        var sidemenu = sideconf['value'];
+
+                        soya.utils.each(sidemenu, function (topitem) {
+                            // console.log(topitem);
+                            var li_navitem = $(document.createElement('li')).addClass('nav-item');
+                            var hasSubmenu = topitem.hasOwnProperty('children');
+
+                            var a = env._getAnchor(topitem, hasSubmenu);
                             li_navitem.append(a);
-                            hasSubmenu && li_navitem.append(env._getUnorderedLists(topitemconf));
+                            hasSubmenu && li_navitem.append(env._getUnorderedLists(topitem));
+                            // console.log(li_navitem,env.target)
                             env.target.append(li_navitem);
                         });
                         return env;
@@ -338,7 +340,7 @@ soya.ready(function () {
                             }else{
                                 if(item.hasOwnProperty('value')){
                                     var value = item['value'];//对发现的值进行比较
-                                    console.log(item,value,compval,soya.utils.isFunc(featurecompcallback),value === compval)
+                                    // console.log(item,value,compval,soya.utils.isFunc(featurecompcallback),value === compval)
 
                                     if(soya.utils.isFunc(featurecompcallback)){
                                         if(featurecompcallback(item,compval)) return item;
@@ -379,8 +381,13 @@ soya.ready(function () {
                                 }
                             }
                         });
-                        console.log('YYYYYYYYYYYYYY',result);
+                        console.log('######## Side Result #########',result);
                         return result !== undefined?result:false;
+                    },
+                    active:function (index) {
+                        if(undefined === index) index = global.header_active_index;
+                        var target = page.sidebar.getSidebarMenu().find("[data-id="+index+"]");
+                        target.parents('li.nav-item').addClass("active");
                     }
                 }
             };
@@ -391,7 +398,7 @@ soya.ready(function () {
                     var element = arguments[i];
                     element = util.toJquery(element);
                     height -= element.outerHeight();
-                    console.log(height)
+                    // console.log(height)
                 }
                 target.css('min-height' , height + 'px');
             };
@@ -774,9 +781,8 @@ soya.ready(function () {
                 pageinfo.hasOwnProperty('coptright') && page.footer.setCopyright(pageinfo['coptright']);
 
                 //处理顶部菜单
-                page.header.menu.getInstance().load(pageinfo['header_menu']);//.active(headeractiveindex);
-
-                page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['request_path']);//.active(sideractiveindex);
+                page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['request_path']).active();//.active(sideractiveindex);
+                page.header.menu.getInstance().load(pageinfo['header_menu']).active();
 
                 //the real path may be an empty string (while the basic uri is deal in backgroud,this can be set to login with auto jump)
                 var path = soya.context.getPath();
@@ -787,11 +793,8 @@ soya.ready(function () {
                 });
                 // console.log(pageinfo,path,value);
                 // console.log(pageinfo['sidebar_menu'],path,value);
-                var target = page.sidebar.getSidebarMenu().find("[data-id="+value[1]['id']+"]");
-                // console.log(target);
-                target.parents('li.nav-item').addClass("active");
+
                 // var toptarget = $(".page-sidebar-menu>li.nav-item.active");
-                page.header.getHeaderMenu().find("[menu-id="+value[0]+"]").addClass("active");
 
                 $(window).trigger('resize');
             },
