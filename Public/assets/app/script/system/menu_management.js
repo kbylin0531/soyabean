@@ -4,10 +4,6 @@
 soya.ready(function () {
     "use strict";
 
-    // console.log(location);
-
-    var idLibrary = [];
-
     var active_index = 0;
 
     //create header-menu and sidebar-menu,all assigned to same group
@@ -40,14 +36,14 @@ soya.ready(function () {
 
     //操作列表
     var operator = (function () {
-        var menu_configs = [];
         var current_index = 0;//current sidebar config index
+        var header_menu = null;
+        var sidebar_menu = null;
         return {
             //load the top menu(whose index is 1)
-            loadTopMenu:function (menuconfig) {
+            loadHeaderMenu:function (menu) {
                 var isfirst = true;
-                // console.log(menuconfig);
-                HeaderNestable.load(menuconfig,function (data, element) {
+                HeaderNestable.load(menu,function (data, element) {
                     // console.log(element);
                     MenuItemContextMenu.bind(element);
                     if(isfirst) {
@@ -57,30 +53,23 @@ soya.ready(function () {
                         isfirst = false;
                     }
                     // console.log(element);
-                    idLibrary.push(parseInt(data.id));
                 });
             },
-            loadSidebarMenu:function (index) {
-                current_index = index;
-                // console.log('current index:',index,'current config',menu_configs[index]);
-                if(menu_configs[index]){
-                    SiderNestable.load(menu_configs[index]['config'],function (data,element) {
-                        MenuItemContextMenu.bind(element);
-                        idLibrary.push(parseInt(data.id));
-                    });
-                }else{
-                    //empty the showing
-                    SiderNestable.load([]);
+            loadSidebarMenuByIndex:function (index) {
+                if(sidebar_menu.hasOwnProperty(index)){
+                    var menu = sidebar_menu[index];
+                    if(menu.hasOwnProperty('value')){
+                        console.log('^ load side menu config ^',menu['value']);
+                        SiderNestable.load(menu['value']);
+                    }
                 }
             },
             loadMenus : function () {
                 var env = this;
-                Dazzling.post(public_url + 'listMenuConfig', {}, function (data) {
-                    menu_configs = data;
-                    //load the top menus
-                    env.loadTopMenu(menu_configs[1]['config']);
-                    //load the sidebar menu of actived top menu item
-                    env.loadSidebarMenu(active_index);
+                Dazzling.post(public_url + 'getMenus', {}, function (data) {
+                    sidebar_menu = data['sidebar'];
+                    env.loadHeaderMenu(header_menu = data['header']);
+                    // env.loadSidebarMenuByIndex();
                 });
             },
             saveTopMenuConfig : function () {
@@ -96,7 +85,6 @@ soya.ready(function () {
             },
             updateIdForCreate : function (id) {
                 var target = MenuItemAddModal.getElement('input[name=id]');
-                if(!id) id = idLibrary.max() +1;
                 target.val(id.toString());
             },
             menuitem:{
@@ -137,12 +125,8 @@ soya.ready(function () {
 
     //init event handler registeration
     (function () {
-        Dazzling.page.registerAction('全部展开', function () {
-            $(".dd").nestable("expandAll");
-        }, "icon-resize-full");
-        Dazzling.page.registerAction('全部折叠', function () {
-            $(".dd").nestable("collapseAll");
-        }, "icon-resize-small");
+        Dazzling.page.registerAction('全部展开', function () {$(".dd").nestable("expandAll");}, "fa-expand");
+        Dazzling.page.registerAction('全部折叠', function () {$(".dd").nestable("collapseAll");}, "fa-compress");
         $("#addTop").click(function () {
             operator.updateIdForCreate();
             MenuItemAddModal.title('添加顶部菜单').show().onConfirm(function () {
@@ -151,7 +135,6 @@ soya.ready(function () {
                 if(!item) Dazzling.toast.error('添加失败!');
 
                 MenuItemContextMenu.bind(item);
-                idLibrary.push(obj.id);
                 operator.updateIdForCreate();
             });
         });
@@ -167,7 +150,6 @@ soya.ready(function () {
                 if(!item) return Dazzling.toast.error('添加失败!');
 
                 MenuItemContextMenu.bind(item);
-                idLibrary.push(obj.id);
                 operator.updateIdForCreate();
             });
         });
@@ -175,7 +157,7 @@ soya.ready(function () {
             operator.saveSideMenuConfig();
         });
         HeaderNestable.onItemClick = function (data) {
-            operator.loadSidebarMenu(data.id);
+            operator.loadSidebarMenuByIndex(data.id);
         };
     })();
 

@@ -125,6 +125,7 @@ class MenuModel extends Model{
      */
     public function getHeaderMenu(){
         $menus = $this->selectMenus(true,false);
+//        \Soya\dumpout($menus);
         if($menus){
             $header = $menus[1]['value'];
             $this->_sortHeaderMenu($header,$menus);

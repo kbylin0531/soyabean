@@ -230,19 +230,19 @@ soya.ready(function () {
                 },
                 lastIsClosed:function () {
                     this.checkInit();
-                    return soya.utils.cookie.get('dazz_sidebar_show');
+                    return parseInt(soya.utils.cookie.get('_sc_'))?true:false;//sidebar_closed => _sc
                 },
                 open:function () {
                     this.checkInit();
                     thisbody.removeClass("page-sidebar-closed");
                     this.sidebar_menu.removeClass("page-sidebar-menu-closed");
-                    soya.utils.cookie.set('dazz_sidebar_show',0,0);
+                    soya.utils.cookie.set('_sc_',0,0);
                 },
                 close:function () {
                     this.checkInit();
                     thisbody.addClass("page-sidebar-closed");
                     this.sidebar_menu.addClass("page-sidebar-menu-closed");
-                    soya.utils.cookie.set('dazz_sidebar_show',1,0);
+                    soya.utils.cookie.set('_sc_',1,0);
                 },
                 menu:{
                     getInstance: function () {
@@ -308,6 +308,7 @@ soya.ready(function () {
                         }
                         global.header_active_index = result[0];
                         global.sidebar_active_index = result[1]['id'];
+                        // console.log(global);
 
                         var sideconf = data[result[0]];
                         var sidemenu = sideconf['value'];
@@ -381,11 +382,11 @@ soya.ready(function () {
                                 }
                             }
                         });
-                        console.log('######## Side Result #########',result);
+                        // console.log('######## Side Result #########',result);
                         return result !== undefined?result:false;
                     },
                     active:function (index) {
-                        if(undefined === index) index = global.header_active_index;
+                        if(undefined === index) index = global.sidebar_active_index;
                         var target = page.sidebar.getSidebarMenu().find("[data-id="+index+"]");
                         target.parents('li.nav-item').addClass("active");
                     }
@@ -471,7 +472,7 @@ soya.ready(function () {
                     var li = $("<li></li>");
                     var a;
                     if (icon) {
-                        a = $('<a href="javascript:void(0);" id="la_' + soya.utils.guid() + '"><i class="' + icon + '"></i> ' + actionName + '</a>');
+                        a = $('<a href="javascript:void(0);" id="la_' + soya.utils.guid() + '"><i class="fa ' + icon + '"></i> ' + actionName + '</a>');
                     } else {
                         a = $('<a href="javascript:void(0);" id="la_' + soya.utils.guid() + '"> ' + actionName + '</a>');
                     }
@@ -756,6 +757,8 @@ soya.ready(function () {
                 // 控制sidebar的显示和隐藏
                 if(soya.context.getViewPort().width <= convention['sizeSM'] || page.sidebar.lastIsClosed()){
                     page.sidebar.close();
+                }else{
+                    page.sidebar.open();
                 }
                 thisbody.find(".sidebar-toggler").click(function () {
                     page.sidebar.nowIsClosed() ? page.sidebar.open() : page.sidebar.close();
@@ -783,18 +786,6 @@ soya.ready(function () {
                 //处理顶部菜单
                 page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['request_path']).active();//.active(sideractiveindex);
                 page.header.menu.getInstance().load(pageinfo['header_menu']).active();
-
-                //the real path may be an empty string (while the basic uri is deal in backgroud,this can be set to login with auto jump)
-                var path = soya.context.getPath();
-                if(!path.length) throw "not allow the empty uri path";
-                var value = page.sidebar.menu.findOuter(pageinfo['sidebar_menu'],path,'href',function (item, compval) {
-                    // console.log(item,compval);
-                    return ('href' in item) && item['href'].indexOf(compval) >= 0;
-                });
-                // console.log(pageinfo,path,value);
-                // console.log(pageinfo['sidebar_menu'],path,value);
-
-                // var toptarget = $(".page-sidebar-menu>li.nav-item.active");
 
                 $(window).trigger('resize');
             },
@@ -1009,17 +1000,83 @@ soya.ready(function () {
                 //load the data for this.target
                 load: function (data, callback) {
                     callback || (callback = null);//显示声明为空
-                    // console.log(data,this.target,callback);
+                    // console.log('####### header data #######',data);
                     data && this.createItemList(data, this.target, callback);
                     return this;
                 },
-                //创建OL节点,children为子元素数组,target为创建的列表附加的目标(目标缺失时选用this.target,即dd)
-                createItemList: function (data, target, callback) {
-                    data = soya.utils.toObject(data);
+                //创建LI节点
+                createItem: function (object, target, callback) {
+                    var env = this;
+                    //检查基本的两个属性
+                    if (soya.utils.checkProperty(object, ['id', 'title']) < 1) {
+                        return console.log('id/title should not be empty!',object);
+                    }
+                    var handle = $('<div class="dd-handle dd3-handle">');
+                    var content = $('<div class="dd3-content">' + object['title'] + '</div>');
+                    var linode = $('<li class="dd-item dd3-item"></li>').append(handle).append(content);
+
+                    //点击激活当前区域
+                    content.click(function (e) {
+                        if (false === env.onItemClick(object, e.target, e)) return; /* prevent the status change while callback return a false */
+                        env.passiveAll();
+                        env.active(e.target);
+                    });
+                    //set attribute for this item expect 'children'
+                    this.updateItemData(linode, object, function (ele, obj) {return '<i class="' + obj['icon'] + '"></i> ' + obj['title'];});
+
+
+                    // return console.log(linode,object);
+                    //设置attach目标
+                    if (!target) target = this.target;
+                    if (!target) return console.log('No target to attach!');
+
+                    var tagname = target.get(0).tagName.toUpperCase();
+                    // console.log(target)
+                    switch (tagname) {
+                        case 'DIV'://直接点击添加时候
+                        case 'LI':
+                            //设置ol
+                            var targetol = target.children('ol');
+                            if (!targetol.length) {
+                                //不存在ol链表时创建
+                                this.createItemList([], target);
+                                targetol = target.children('ol');
+                            }
+                            targetol.prepend(linode);
+                            break;
+                        case 'OL':
+                            target.append(linode);
+                            break;
+                        default:
+                            throw "无法在该元素上创建列表:" + tagname;
+                    }
+                    // callback && callback(object, linode);//每次遍历一项回调
+
+                    // console.log('##### item itemlist ol ######',object,soya.utils.checkProperty(object, 'children'));
+                    //look through children if attach success
+                    if(soya.utils.checkProperty(object, 'children') > 0){
+                        // console.log(object['children'])
+                        soya.utils.each(object['children'],function (child) {
+                            env.createItem(child,linode,callback);
+                            // child.hasOwnProperty('children') && env.createItemList(child['children'], linode, callback);
+                        });
+                    }
+                    return linode;
+                },
+                /**
+                 * 创建OL节点及其子节点LI,children为子元素数组,target为创建的列表附加的目标(目标缺失时选用this.target,即dd)
+                 * @param objectlist []
+                 * @param target
+                 * @param callback
+                 * @returns {*|jQuery|HTMLElement}
+                 */
+                createItemList: function (objectlist, target, callback) {
+                    objectlist = soya.utils.toObject(objectlist);
                     var env = this;
                     var ol = $('<ol class="dd-list"></ol>');
-                    soya.utils.each(data, function (item) {
-                        env.createItem(item, ol, callback);
+                    soya.utils.each(objectlist, function (object) {
+                        // console.log('####### craete item list -- <li> #######',object);
+                        env.createItem(object, ol, callback);
                     });
 
                     //寻找附加target
@@ -1079,67 +1136,6 @@ soya.ready(function () {
                     } else {
                         element.children('.dd3-content').addClass('active');
                     }
-                },
-                createItem: function (data, target, callback) {
-                    data = soya.utils.toObject(data);
-                    //设置基本的两个属性
-                    if (soya.utils.checkProperty(data, ['id', 'title']) < 1) {
-                        console.log('id/title should not be empty!');
-                        return;
-                    }
-
-                    var env = this;
-                    var handle = $('<div class="dd-handle dd3-handle">');
-                    var content = $('<div class="dd3-content">' + data['title'] + '</div>');
-                    var linode = $('<li class="dd-item dd3-item"></li>').append(handle).append(content);
-                    content.click(function (e) {
-                        if (false === env.onItemClick(data, e.target, e)) {
-                            //prevent the status change while callback return a false
-                            return;
-                        }
-                        env.passiveAll();
-                        env.active(e.target);
-                    });
-                    //set attribute for this item expect 'children'
-                    this.updateItemData(linode, data, function (ele, obj) {
-                        return '<i class="' + obj['icon'] + '"></i> ' + obj['title'];
-                    });
-
-                    // console.log(this.target)
-                    //设置attach目标
-                    if (!target) target = this.target;
-                    if (!target) return Dazzling.toast.warning('Nestable require a target to attach!');
-
-                    // console.log(target)
-
-                    // console.log(target.get(0).tagName);
-                    var tagname = target.get(0).tagName.toUpperCase();
-                    // console.log(target)
-                    switch (tagname) {
-                        case 'DIV'://直接点击添加时候
-                        case 'LI':
-                            //设置ol
-                            var targetol = target.children('ol');
-                            if (!targetol.length) {
-                                //不存在ol链表时创建
-                                this.createItemList([], target);
-                                targetol = target.children('ol');
-                            }
-                            targetol.prepend(linode);
-                            break;
-                        case 'OL':
-                            target.append(linode);
-                            break;
-                        default:
-                            throw "无法在该元素上创建列表:" + tagname;
-                    }
-                    // console.log(data)
-                    callback && callback(data, linode);//每次遍历一项回调
-
-                    //look through children if attach success
-                    soya.utils.checkProperty(data, 'children') && this.createItemList(data['children'], linode, callback);
-
-                    return linode;
                 },
                 _serialize: function (data) {
                     var env = this;
@@ -1222,12 +1218,8 @@ soya.ready(function () {
                     var isfirst = true;
                     var node, ul;
                     for (var x = 0; x < config.length; x++) {
-
                         var item = config[x];
-
                         if (!item.hasOwnProperty('title')) return Dazzling.toast.warning('Tab require a title!');
-
-
                         if (item.hasOwnProperty('children')) {/*下拉*/
                             var guid = soya.utils.guid();
                             var children = item['children'];

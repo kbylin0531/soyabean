@@ -541,6 +541,7 @@ window.soya = (function(){
              * @param path
              */
             set:function (name, value, expire,path) {
+                // console.log(name, value, expire,path);
                 path = ";path="+(path ? path : '/');// all will access if not set the path
                 var cookie;
                 if(undefined === expire || false === expire){
@@ -713,6 +714,7 @@ window.soya = (function(){
                 for(var i=0; i < object.length; i++){
                     result = itemcallback(object[i],i,userdata);
                     if(result === '[break]') break;
+                    if(result === '[continue]') continue;
                     if(result !== undefined) return result;//如果返回了什么东西解释实际返回了，当然除了命令外
                 }
             }else if(this.isObject(object)){
@@ -720,6 +722,7 @@ window.soya = (function(){
                     if(!object.hasOwnProperty(key)) continue;
                     result = itemcallback(object[key],key,userdata);
                     if(result === '[break]') break;
+                    if(result === '[continue]') continue;
                     if(result !== undefined) return result;
                 }
             }else{
