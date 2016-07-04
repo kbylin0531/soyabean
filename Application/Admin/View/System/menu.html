@@ -26,13 +26,7 @@
 <!-- 添加顶部菜单 -->
 <div id="MenuItemAddModal">
     <form class="form-horizontal" id="MenuItemAddForm" role="form">
-        <div class="form-group">
-            <label class="col-sm-2 control-label">菜单项ID</label>
-            <div class="col-sm-6">
-                <input type="text" class="form-control input-sm" name="id" placeholder="">
-                <p class="help-block">在没有发生ID冲突的情况下不建议修改</p>
-            </div>
-        </div>
+        <input name="id" type="hidden">
         <div class="form-group">
             <label class="col-sm-2 control-label">名称</label>
             <div class="col-sm-6">
@@ -44,14 +38,14 @@
             <label class="col-sm-2 control-label">图标选择</label>
             <div class="col-md-10">
                 <input type="text" class="form-control input-sm" name="icon" placeholder="请输入图标名称,如'icon-circle-blank'">
-                <p class="help-block"><a href="__ROOT__/Admin/PublicAction/PageIconSelection" target="_blank">点我查看有哪些图标</a></p>
+                <p class="help-block">请参照font-awsome</p>
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-2 control-label">值</label>
             <div class="col-md-10">
-                <input type="text" class="form-control input-sm" name="href" placeholder="">
-                <p class="help-block">请根据不通的类型设置不通的菜单项的值</p>
+                <input type="text" class="form-control input-sm" name="value" placeholder="">
+                <p class="help-block">如'/Admin/System/menu'</p>
             </div>
         </div>
     </form>

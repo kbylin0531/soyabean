@@ -127,6 +127,14 @@ class Model {
         return $this->fields;
     }
 
+    /**
+     * 返回最后插入行的ID或序列值
+     * @param $name
+     * @return mixed
+     */
+    public function lastInsertId($name=null){
+        return $this->dao->lastInsertId($name);
+    }
 
     /**
      * 重置CURD参数
@@ -223,6 +231,14 @@ class Model {
         return $this;
     }
 
+    /**
+     *
+     * @param $limit
+     * @param $offset
+     */
+    public function limit($limit,$offset){
+        //TODO:
+    }
     /**
      * 设置当前要操作的数据的排列顺序
      * @param string $order

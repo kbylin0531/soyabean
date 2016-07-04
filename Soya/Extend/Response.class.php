@@ -133,16 +133,38 @@ final class Response {
         ob_get_level() and ob_end_flush();
     }
 
+    /**
+     * 异步返回成功信息
+     * @param string $message
+     * @throws Exception
+     */
     public static function success($message){
         self::ajaxBack([
-            '_message' => $message,
+            '_msg' => $message,
             '_type' => self::MESSAGE_TYPE_SUCCESS,
         ]);
     }
 
+    /**
+     * 异步返回警告信息
+     * @param string $message
+     * @throws Exception
+     */
+    public static function warning($message){
+        self::ajaxBack([
+            '_msg' => $message,
+            '_type' => self::MESSAGE_TYPE_SUCCESS,
+        ]);
+    }
+
+    /**
+     * 异步返回错误信息
+     * @param string $message
+     * @throws Exception
+     */
     public static function failed($message){
         self::ajaxBack([
-            '_message' => $message,
+            '_msg' => $message,
             '_type' => self::MESSAGE_TYPE_FAILURE,
         ]);
     }

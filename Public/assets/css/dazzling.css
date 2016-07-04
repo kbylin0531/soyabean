@@ -121,6 +121,7 @@ li [class*=" icon-"].icon-large,li [class^=icon-].icon-large{width:1.5625em}
 .page-header.navbar .hor-menu .navbar-nav>li .dropdown-menu li>a{font-family:"Open Sans",sans-serif;font-size:14px;font-weight:300;padding:9px 10px;white-space:normal}
 /*.page-header.navbar .hor-menu .navbar-nav>li .dropdown-menu li>a .badge,*/
 .page-header.navbar .hor-menu .navbar-nav>li .dropdown-menu li>a .label{font-weight:300}
+.page-header.navbar .hor-menu .navbar-nav>li.classic-menu-dropdown {min-width: 103px;}
 .page-header.navbar .hor-menu .navbar-nav>li.classic-menu-dropdown .dropdown-menu{min-width:195px;max-width:176px}
 .page-header.navbar .hor-menu .navbar-nav>li .dropdown-submenu>.dropdown-menu{top:0}
 .page-header.navbar .hor-menu .navbar-nav>li .dropdown-submenu>a:after{top:9px;right:10px}

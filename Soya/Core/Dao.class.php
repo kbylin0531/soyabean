@@ -388,4 +388,15 @@ class Dao extends \Soya {
         return $this->_driver->escape($fieldname);
     }
 
+    /**
+     * 返回最后插入行的ID或序列值
+     * NoteL:
+     *  官方：在不同的 PDO 驱动之间，此方法可能不会返回一个有意义或一致的结果，因为底层数据库可能不支持自增字段或序列的概念
+     *  推测只要是自增字段就可以把其值返回
+     * @param string $name 应该返回ID的那个序列对象的名称
+     * @return string
+     */
+    public function lastInsertId($name=null){
+        return $this->_driver->lastInsertId($name);
+    }
 }

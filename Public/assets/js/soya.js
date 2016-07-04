@@ -754,13 +754,10 @@ window.soya = (function(){
          * 检查对象是否有指定的属性
          * @param object {{}}
          * @param prop 属性数组
-         * @return int 返回1表示全部属性都拥有,返回0表示全部都没有,部分有的清空下返回-1
+         * @return int 返回1表示全部属性都拥有,返回0表示全部都没有,部分有的情况下返回-1
          */
         checkProperty:function (object, prop) {
             if(!utils.isArray(prop)) prop = [prop];
-            if(undefined === prop) {
-                console.log([object, prop],"Arguments should not be empty!")
-            }
             var count = 0;
             for(var i = 0; i < prop.length;i++){
                 if(object.hasOwnProperty(prop[i])) count++;
@@ -768,6 +765,34 @@ window.soya = (function(){
             if(count === prop.length) return 1;
             else if(count === 0) return 0;
             else return -1;
+        },
+        /**
+         * 停止事件冒泡
+         * 如果提供了事件对象，则这是一个非IE浏览器,因此它支持W3C的stopPropagation()方法
+         * 否则，我们需要使用IE的方式来取消事件冒泡
+         * @param e
+         */
+        stopBubble: function (e) {
+            if ( e && e.stopPropagation ) {
+                e.stopPropagation();
+            } else {
+                window.event.cancelBubble = true;
+            }
+        },
+        /**
+         * 阻止事件默认行为
+         * 阻止默认浏览器动作(W3C)
+         * IE中阻止函数器默认动作的方式
+         * @param e
+         * @returns {boolean}
+         */
+        stopDefault: function ( e ) {
+            if ( e && e.preventDefault ) {
+                e.preventDefault();
+            } else {
+                window.event.returnValue = false;
+            }
+            return false;
         }
     };
 

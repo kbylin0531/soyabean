@@ -10,7 +10,7 @@ use Exception as E;
 use Soya\Core\URI;
 use Soya\Exception\FileNotFoundException;
 use Soya\Exception\ParameterInvalidException;
-use Soya\Util\Response;
+use Soya\Extend\Response;
 use Soya\Util\SEK;
 
 require_once __DIR__.'/Common/constant.php';

@@ -29,8 +29,9 @@ class MenuModel extends Model{
             'title' => null,
             'value' => '',
             'icon'  => null,
-            'order' => null,
+//            'order' => null,//结构由顶级菜单决定，暂时弃用
             'status'    => null,
+            'create_time'   => time(),
         ];
         is_array($info['value']) and $info['value'] = @serialize($info['value']);
         SEK::merge($data,$info);
@@ -54,12 +55,18 @@ class MenuModel extends Model{
             'order' => null,
             'status'=> null,
         ];
-        is_array($info['value']) and $info['value'] = @serialize($info['value']);
+        //补丁
+        if(empty($info['value'])){
+            $info['value'] = null;
+        }else{
+            is_array($info['value']) and $info['value'] = @serialize($info['value']);
+        }
+
         SEK::merge($data,$info);
-        SEK::filter($data,[null,false]);
+        SEK::filter($data,[null,false,''],true);
         $id = $info['id'];
-        unset($info['id']);
-        return $this->fields($info)->where('id = '.intval($id))->update();
+        $result = $this->fields($data)->where('id = '.intval($id))->update();;
+        return $result;
     }
 
     /**
@@ -101,6 +108,7 @@ class MenuModel extends Model{
         if($list){
             $temp = [];
             foreach ($list as &$item){
+//                \Soya\dumpout($item['value']);
                 $value = @unserialize($item['value']);
                 if(false === $value){
                     //无法反序列化，保持不变

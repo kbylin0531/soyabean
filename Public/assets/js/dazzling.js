@@ -79,28 +79,37 @@ soya.ready(function () {
                 menu : {
                     /**
                      * create and return the handler of topmenu
-                     * @returns {{}}
+                     * @returns this
                      */
                     getInstance: function () {
                         var instance = soya.newInstance(this);
                         instance.target = page.header.getHeaderMenu();
                         return instance;
                     },
-                    //get the children attribute of element.It will return an array if attribute exist but null while not exist
-                    _getChildren: function (element, childrenattrname) {
+                    /**
+                     * get the children attribute of element.It will return an array if attribute exist but null while not exist
+                     * @param element
+                     * @param childrenattrname
+                     * @returns {boolean}
+                     * @private
+                     */
+                    _gc: function (element, childrenattrname) {
                         if (!childrenattrname) childrenattrname = 'children';
                         return (element.hasOwnProperty(childrenattrname) && element[childrenattrname]) ?
                             element[childrenattrname] : false;
                     },
                     /**
+                     * _createAnchor
                      * create and return the anchor by config
                      * @param config
                      * @param isappend default prepend to anchar
                      * @param callback define Anchor href by self,format like 'function(element,config){...}'
+                     * @param istop
                      * @returns {jQuery}
                      * @private
                      */
-                    _createAnchor: function (config, isappend, callback) {
+                    _hca: function (config, isappend, callback,istop) {
+                        istop || (istop = false);
                         var a = $(document.createElement('a'));
                         config.hasOwnProperty('title') || (config.title = 'Untitled');
                         a.text(" " + config.title + " ");
@@ -112,26 +121,30 @@ soya.ready(function () {
                             a.attr('href', config.href);
                         }
                         //有子菜单,设置下拉属性
-                        this._getChildren(config) && a.attr('data-toggle', 'dropdown');
+                        if(this._gc(config) && !istop){
+                            a.attr('data-toggle', 'dropdown');
+                            $(document.createElement('i')).addClass('fa fa-angle-right float-right').appendTo(a);
+                        }
                         //设置了图标的情况下创建<i class="XX"></i>
                         if (config.hasOwnProperty('icon') && config.icon) {
                             var icon = $(document.createElement('i')).addClass(config.icon);
                             isappend ? icon.appendTo(a) : icon.prependTo(a);
-                            // isPrepend?icon.prependTo(a):icon.appendTo(a);
                         }
                         return a;
                     },
                     /**
+                     * _createUnorderedLists
                      * create and return the
                      * @param menuitemsconf
                      * @param isappend
                      * @param callback for create anchor
+                     * @param onclick 点击菜单时的回掉函数
                      * @returns {*|jQuery}
                      * @private
                      */
-                    _createUnorderedLists: function (menuitemsconf, isappend, callback) {
+                    _hcul: function (menuitemsconf, isappend, callback,onclick) {
                         //不存在子菜单或者子菜单为空的情况下时直接返回
-                        var children = this._getChildren(menuitemsconf);
+                        var children = this._gc(menuitemsconf);
                         var list = $(document.createElement('ul')).addClass('dropdown-menu');
                         if (children) {
                             var env = this;
@@ -140,11 +153,12 @@ soya.ready(function () {
                             soya.utils.each(children, function (child) {
                                 var li = $(document.createElement('li'));
                                 li.attr('menu-id', menuitemsconf['id']);//set menu-id for li
-                                li.append(env._createAnchor(child, isappend, callback));
+                                li.click(onclick);
+                                li.append(env._hca(child, isappend, callback));
                                 list.append(li);
-                                if (env._getChildren(child)) {
+                                if (env._gc(child)) {
                                     li.addClass('dropdown-submenu');
-                                    li.append(env._createUnorderedLists(child));
+                                    li.append(env._hcul(child,isappend, callback,onclick));
                                 }
                             });
                         }
@@ -154,21 +168,26 @@ soya.ready(function () {
                      * load data from header menu
                      * @param data loading data
                      * @param callback create anchor callback
+                     * @param onclick 点击菜单时的回掉函数
                      * @returns {{}}
                      */
-                    load: function (data, callback) {
+                    load: function (data, callback,onclick) {
+                        onclick || (onclick = function (e) {
+                            console.log('##### you click the element #####',e.currentTarget);
+                            soya.utils.stopBubble(e);
+                        });
                         var env = this;
                         soya.utils.each(data, function (menuitem) {
                             // console.log(menuitem)
                             var li = $(document.createElement('li'));
                             li.addClass('classic-menu-dropdown');
                             li.attr('menu-id', menuitem['id']);//set menu-id for li
+                            li.click(onclick);
+                            var haschild = env._gc(menuitem) ? true : false;
 
-                            var haschild = env._getChildren(menuitem) ? true : false;
-
-                            menuitem['icon'] = haschild?'icon-angle-down':false;
-                            li.append(env._createAnchor(menuitem, true, callback));//true is due to 'icon-angle-down' is append
-                            if (haschild) li.append(env._createUnorderedLists(menuitem, false, callback));// icon is aheand the inner title
+                            menuitem['icon'] = haschild?'fa fa-angle-down float-right':false;
+                            li.append(env._hca(menuitem, true, callback,true));//true is due to 'icon-angle-down' is append
+                            if (haschild) li.append(env._hcul(menuitem, false, callback,onclick));// icon is aheand the inner title
 
                             env.target.append(li);
                         });
@@ -250,7 +269,7 @@ soya.ready(function () {
                         instance.target = page.sidebar.getSidebarMenu();
                         return instance;
                     },
-                    _getAnchor: function (attrs, hasSubmenu) {
+                    _ca: function (attrs, hasSubmenu) {
                         hasSubmenu || (hasSubmenu = attrs.hasOwnProperty('children'));
                         var a = $(document.createElement('a')).addClass(hasSubmenu ? 'nav-link nav-toggle' : 'nav-link');
 
@@ -276,7 +295,7 @@ soya.ready(function () {
 
                         return a;
                     },
-                    _getUnorderedLists: function (menuitem) {
+                    _cul: function (menuitem) {
                         if (!menuitem.hasOwnProperty('children') || !menuitem.children) return;//不存在子菜单时直接返回
                         var li_ul = $('<ul class="sub-menu"></ul>');
 
@@ -286,10 +305,10 @@ soya.ready(function () {
 
                             var li_navitem = $(document.createElement('li'));
                             li_navitem.addClass('nav-item');
-                            li_navitem.append(env._getAnchor(subitem, hasSubmenu));
+                            li_navitem.append(env._ca(subitem, hasSubmenu));
                             li_ul.append(li_navitem);
                             if (hasSubmenu) {
-                                li_navitem.append(env._getUnorderedLists(subitem));
+                                li_navitem.append(env._cul(subitem));
                             }
                         });
                         return li_ul;
@@ -302,31 +321,64 @@ soya.ready(function () {
                      */
                     load: function (data, path) {
                         var env = this;
-                        var result = this.findOuter(data, path, 'value');
-                        if(false === result){
-                            throw "No !!!";
+                        if(path){
+                            var result = this.fo(data, path, 'value');
+                            if(false === result){
+                                throw "No !!!";
+                            }
+
+                            // console.log(data, path,result)
+                            global.header_active_index = result[0];
+                            if(result[1]){/* 存在子菜单的情况下 */
+                                global.sidebar_active_index = result[1]['id'];
+                                // console.log(global);
+
+                                var sideconf = data[result[0]];
+                                var sidemenu = sideconf['value'];
+
+                                soya.utils.each(sidemenu, function (topitem) {
+                                    // console.log(topitem);
+                                    var li_navitem = $(document.createElement('li')).addClass('nav-item');
+                                    var hasSubmenu = topitem.hasOwnProperty('children');
+
+                                    var a = env._ca(topitem, hasSubmenu);
+                                    li_navitem.append(a);
+                                    hasSubmenu && li_navitem.append(env._cul(topitem));
+                                    // console.log(li_navitem,env.target)
+                                    env.target.append(li_navitem);
+                                });
+                            }
+                        }else{
+                            env.cleanSideMenu();
+                            if(data.hasOwnProperty('value')){
+                                data = data['value'];
+                            }else{
+                                data = [];
+                            }
+                            console.log(data)
+                            soya.utils.each(data, function (topitem) {
+                                // console.log(topitem);
+                                var li_navitem = $(document.createElement('li')).addClass('nav-item');
+                                var hasSubmenu = topitem.hasOwnProperty('children');
+
+                                var a = env._ca(topitem, hasSubmenu);
+                                li_navitem.append(a);
+                                hasSubmenu && li_navitem.append(env._cul(topitem));
+                                // console.log(li_navitem,env.target)
+                                env.target.append(li_navitem);
+                            });
                         }
-                        global.header_active_index = result[0];
-                        global.sidebar_active_index = result[1]['id'];
-                        // console.log(global);
-
-                        var sideconf = data[result[0]];
-                        var sidemenu = sideconf['value'];
-
-                        soya.utils.each(sidemenu, function (topitem) {
-                            // console.log(topitem);
-                            var li_navitem = $(document.createElement('li')).addClass('nav-item');
-                            var hasSubmenu = topitem.hasOwnProperty('children');
-
-                            var a = env._getAnchor(topitem, hasSubmenu);
-                            li_navitem.append(a);
-                            hasSubmenu && li_navitem.append(env._getUnorderedLists(topitem));
-                            // console.log(li_navitem,env.target)
-                            env.target.append(li_navitem);
-                        });
                         return env;
                     },
-                    findInner: function (item, compval,feature,featurecompcallback) {
+                    cleanSideMenu:function () {
+                        var children = page.sidebar.getSidebarMenu().children();
+                        // return console.log(sidemenu,children);
+                        for(var i = 0; i < children.length; i++){
+                            children.eq(i).remove();
+                        }
+                    },
+                    //findInner
+                    fi: function (item, compval,feature,featurecompcallback) {
                         // console.log(item, compval,feature);
                         feature || (feature = 'value');
                         var env = this;
@@ -334,7 +386,7 @@ soya.ready(function () {
                             if(soya.utils.isArray(item)){
                                 return soya.utils.each(item,function (subitem) {
                                     // console.log(subitem);
-                                    var result = env.findInner(subitem, compval,feature,featurecompcallback);
+                                    var result = env.fi(subitem, compval,feature,featurecompcallback);
                                     // console.log(result);
                                     if (result) return result;
                                 });
@@ -353,7 +405,7 @@ soya.ready(function () {
                                     }
 
                                     if (item.hasOwnProperty('children')) {
-                                        var result = env.findInner(item['children'], compval,feature,featurecompcallback);
+                                        var result = env.fi(item['children'], compval,feature,featurecompcallback);
                                         // console.log(result);
                                         if (result) return result;
                                     }
@@ -363,6 +415,7 @@ soya.ready(function () {
                         return false;
                     },
                     /**
+                     * findOuter
                      * find what the menu hold the menuitem of this id
                      * @param menus the menu to go through
                      * @param compval compatable value
@@ -370,12 +423,12 @@ soya.ready(function () {
                      * @param featurecompcallback feature compare callback
                      * @returns {*} return the index while find but false on failure
                      */
-                    findOuter: function (menus, compval,feature,featurecompcallback) {
+                    fo: function (menus, compval,feature,featurecompcallback) {
                         var env = this;
                         var result = soya.utils.each(menus,function (menu,id) {
                             if(menu.hasOwnProperty('value') && menu['value']){
                                 // console.log(menu['value'], compval);
-                                var result = env.findInner(menu['value'], compval,feature,featurecompcallback);
+                                var result = env.fi(menu['value'], compval,feature,featurecompcallback);
                                 // console.log(result)
                                 if(false !== result){
                                     return [id,result];
@@ -392,12 +445,13 @@ soya.ready(function () {
                     }
                 }
             };
+
             var adjustHeight = function () {
                 var height = soya.context.getViewPort().height;
                 var target = arguments[0];
                 for(var i = 1 ; i < arguments.length;i++){
                     var element = arguments[i];
-                    element = util.toJquery(element);
+                    element = utils.toJquery(element);
                     height -= element.outerHeight();
                     // console.log(height)
                 }
@@ -462,7 +516,7 @@ soya.ready(function () {
 
                 init: function (selector) {
                     if (undefined === selector) selector = '.page-toolbar .dropdown-menu';//默认的选择器
-                    !this.page_action_list && (this.page_action_list = util.toJquery(selector));
+                    !this.page_action_list && (this.page_action_list = utils.toJquery(selector));
                 },
                 page_action_list: null,
                 //注册操作:操作名称,点击时候的回调函数
@@ -498,18 +552,53 @@ soya.ready(function () {
             };
         })();
 
+        var toast = (function () {
+            if(!toastr){
+                var obj = {};
+                obj.init = obj.success = obj.warning = obj.error = obj.info = obj.info = function () {
+                  alert('未能加载toastr插件，无法使用该功能！');
+                };
+                return obj;
+            }
+            return {
+                'init': function () {
+                    toastr.options.closeButton = true;
+                    toastr.options.newestOnTop = true;
+                },
+                'success': function (msg, title) {
+                    this.init();
+                    window.toastr.success(msg, title);
+                },
+                'warning': function (msg, title) {
+                    this.init();
+                    toastr.warning(msg, title);
+                },
+                'error': function (msg, title) {
+                    this.init();
+                    toastr.error(msg, title);
+                },
+                'info': function (msg, title) {
+                    this.init();
+                    toastr.info(msg, title);
+                },
+                'clear': function () {
+                    toastr.clear();
+                }
+            }
+        })();
+
         //general kits
-        var util = (function () {
+        var utils = (function () {
             return {
                 /**
                  * 按图（索骥）
                  * 自动按照键值对映射将选择器的属性填写到指定的元素中
-                 * @param selectores 例如：["avatar.src" , ".avatar.src" ,".avatar" , "avatar"]
+                 * @param selectors 例如：["avatar.src" , ".avatar.src" ,".avatar" , "avatar"]
                  * @param kvmap 例如： {id: "1", username: "admin", sex: "1", nickname: "Administrator", phone: "15658070289"…}
                  */
-                antu: function (selectores, kvmap) {
+                antu: function (selectors, kvmap) {
                     // console.log(selectores,kvmap);
-                    soya.utils.each(selectores, function (id) {
+                    soya.utils.each(selectors, function (id) {
                         var index = id.indexOf('.');
                         var selector = true;//id selector
                         if(-1 === index){
@@ -546,7 +635,22 @@ soya.ready(function () {
                  * last request time
                  */
                 _lqt : 0,
+                doPostWithLimit:function (url, data, callback, datatype, async) {
+                    var curmillitime = (new Date()).valueOf();
+                    if (!this._lqt) {
+                        this._lqt = curmillitime;
+                    } else {
+                        var gap = curmillitime - this._lqt;
+                        // return console.log(gap ,gap < convention['requestInterval'],convention['requestInterval']);
+                        this._lqt = curmillitime;
+                        if (gap < convention['requestInterval']) {
+                            return Dazzling.toast.warning('请勿频繁刷新!');
+                        }
+                    }
+                    return this.doPost(url, data, callback, datatype, async);
+                },
                 /**
+                 * 定制的方法,定制过程中避免对jquery中的方法进行修改
                  * @param url 请求地址
                  * @param data 请求数据对象
                  * @param callback 服务器响应时的回调,如果回调函数返回false或者无返回值,则允许系统进行通知处理,返回true表示已经处理完毕,无需其他的操作
@@ -555,48 +659,36 @@ soya.ready(function () {
                  * @returns {*}
                  */
                 doPost: function (url, data, callback, datatype, async) {
-                    var curmillitime = (new Date()).valueOf();
-                    if (!this._lqt) {
-                        this._lqt = curmillitime;
-                    } else {
-                        var gap = curmillitime - this._lqt;
-                        this._lqt = curmillitime;
-                        if (gap < parseInt(convention['requestInterval'])) {
-                            return Dazzling.toast.warning('请勿频繁刷新!');
-                        }
-                    }
+                    datatype || (datatype = "json");
+                    async || (async = true);
 
-                    !datatype && (datatype = "json");
-                    !async && (async = true);
+                    if (typeof data === 'string') {data = {'dazz': data /*后台会进行分解*/};}
 
-                    if (typeof data === 'string') {
-                        data = {
-                            '_KBYLIN_': data //后台会进行分解
-                        };
-                    }
-
-                    return jQuery.ajax({
+                    return $.ajax({
                         url: url,
                         type: 'post',
                         dataType: datatype,
                         async: async,
                         data: data,
                         success: function (data) {
-                            var message_type;
+
                             // check if is the system-defined message format(has '' and '' attribute)
-                            var isMsg = (data instanceof Object) && data.hasOwnProperty('_type') && data.hasOwnProperty('_message');
+                            var ismsg = (data instanceof Object) && (soya.utils.checkProperty(data,['_type','_msg']) === 1);
                             //通知处理
-                            isMsg && (message_type = parseInt(data['_type']));
-
-                            if (callback && callback(data, isMsg, message_type)) return;//如果用户的回调明确声明返回true,表示已经处理得当,无需默认的参与
-
-                            if (isMsg) {
-                                if (message_type > 0) {
-                                    return Dazzling.toast.success(data['_message']);
-                                } else if (message_type < 0) {
-                                    return Dazzling.toast.warning(data['_message']);
+                            var msgtype = undefined;
+                            if(ismsg){
+                                msgtype = parseInt(data['_type']);
+                            }
+                            //如果用户的回调明确声明返回true,表示已经处理得当,无需默认的参与
+                            if (callback && callback(data, ismsg, msgtype)) return;
+                            if (ismsg) {
+                                //大于0成功，小于0警告，等于0表示发生了错误
+                                if (msgtype > 0) {
+                                    return Dazzling.toast.success(data['_msg']);
+                                } else if (msgtype < 0) {
+                                    return Dazzling.toast.warning(data['_msg']);
                                 } else {
-                                    return Dazzling.toast.error(data['_message']);
+                                    return Dazzling.toast.error(data['_msg']);
                                 }
                             }
                         }
@@ -657,7 +749,7 @@ soya.ready(function () {
                 //设置体部分
                 var body = $('<div class="modal-body"></div>');
                 body.appendTo(content);
-                body.append(util.toJquery(selector));
+                body.append(utils.toJquery(selector));
 
                 //设置足部
                 var cancel = $('<button type="button" class="btn btn-default cancelbtn" data-dismiss="modal">' + config['cancelText'] + '</button>');
@@ -711,100 +803,24 @@ soya.ready(function () {
                 title.text(newtitle);
                 return this;
             },
-            'show': function () {
+            show: function () {
                 this.target.modal('show');
                 return this;
             },
-            'hide': function () {
+            hide: function () {
                 this.target.modal('hide');
                 return this;
             }
         };
 
-        return {
-            //start the application
-            'start': function (infos,itemsIds) {
-                var resizehandler;
-                var currentHeight;
-                var browerinfo = soya.context.getBrowserInfo();
-                var isIE8 = browerinfo.type === 'ie' && 8 === browerinfo.version;
-                var isIE9 = browerinfo.type === 'ie' && 9 === browerinfo.version;
-                var isIE10 = browerinfo.type === 'ie' && 10 === browerinfo.version;
-
-                isIE8 && thishtml.addClass('ie8 ie'); // detect ie8 version
-                isIE9 && thishtml.addClass('ie9 ie'); // detect ie9 version
-                isIE10 && thishtml.addClass('ie10 ie'); // detect IE10 version
-                (isIE8 || isIE9) && ('placeholder' in jQuery) && $('input, textarea').placeholder();//该插件存在时候开启placeholder
-
-                //****************************************
-                //init auto adjuest
-                //****************************************
-                $(window).resize(function () {
-                    //quite event since only body resized not window.
-                    if (isIE8 && (currentHeight == document.documentElement.clientHeight)) return;
-                    if (resizehandler) clearTimeout(resizehandler);
-                    resizehandler = setTimeout(function () {
-                        page.resizer.exec();
-                        // for (var i = 0; i < resizeHandlers.length; i++)  resizeHandlers[i].call();//执行调整函数
-                    }, 75); // 等待window调整完成
-                    // store last body client height
-                    // 注意 document.body.clientHeight 和 document.documentElement.clientHeight 的区别
-                    isIE8 && (currentHeight = document.documentElement.clientHeight);
-                });
-                //****************************************
-                //init sidebar
-                //****************************************
-                // 控制sidebar的显示和隐藏
-                if(soya.context.getViewPort().width <= convention['sizeSM'] || page.sidebar.lastIsClosed()){
-                    page.sidebar.close();
-                }else{
-                    page.sidebar.open();
-                }
-                thisbody.find(".sidebar-toggler").click(function () {
-                    page.sidebar.nowIsClosed() ? page.sidebar.open() : page.sidebar.close();
-                    $(window).trigger('resize');
-                });
-
-                //****************************************
-                // init others
-                //****************************************
-                page.header.setSearchHandler(); // handles horizontal menu
-                page.resizer.push(page.behavior.autoContentHeight);
-
-                var userinfo = infos['user'];
-                var pageinfo = infos['page'];
-
-                util.antu(itemsIds, userinfo);
-
-                page.header.user.setMenu(pageinfo['user_menu']);
-
-                //设置标题
-                pageinfo.hasOwnProperty('title') && page.setTitle(pageinfo['title']);
-                pageinfo.hasOwnProperty('logo') && page.setLogo(pageinfo['logo']);
-                pageinfo.hasOwnProperty('coptright') && page.footer.setCopyright(pageinfo['coptright']);
-
-                //处理顶部菜单
-                page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['request_path']).active();//.active(sideractiveindex);
-                page.header.menu.getInstance().load(pageinfo['header_menu']).active();
-
-                $(window).trigger('resize');
-            },
-            //定制的方法,定制过程中避免对jquery中的方法进行修改
-            'post': util.doPost,
-            //工具箱
-            'utils': util,
-            //页面工具
-            'page': page,
-            //datatable表格工具,一次只能操作一个表格API对象
-            //datatable.find("tbody").on('dblclick','tr',function () {});//可以设置为双击编辑
-            //改造成return new this;
-            datatables: {
-                'tableApi': null,//datatable的API对象
+        var datatables = (function () {
+            return {
+                '_api': null,//datatable的API对象
                 "dtElement": null, // datatable的jquery对象
                 'current_row': null,//当前操作的行,可能是一群行
                 //设置之后的操作所指定的DatatableAPI对象
                 'bind': function (dtJquery, options) {
-                    dtJquery = util.toJquery(dtJquery);
+                    dtJquery = utils.toJquery(dtJquery);
                     var newinstance = soya.newInstance(this);
                     newinstance.dtElement = dtJquery;
 
@@ -815,15 +831,15 @@ soya.ready(function () {
                         convention[key] = value;
                     });
                     // console.log(convention);
-                    newinstance.tableApi = dtJquery.DataTable(convention);
+                    newinstance._api = dtJquery.DataTable(convention);
                     return newinstance;
                     /* this 对象同于链式调用 */
                 },
                 //为tableapi对象加载数据,参数二用于清空之前的数据
                 'load': function (data, clear) {
-                    if (!this.tableApi) return Dazzling.toast.error("No Datatable API binded!");
-                    if (undefined === clear || clear) this.tableApi.clear();//clear为true或者未设置时候都会清除之前的表格内容
-                    this.tableApi.rows.add(data).draw();
+                    if (!this._api) return Dazzling.toast.error("No Datatable API binded!");
+                    if (undefined === clear || clear) this._api.clear();//clear为true或者未设置时候都会清除之前的表格内容
+                    this._api.rows.add(data).draw();
                     return this;
                 },
                 //表格发生了draw事件时设置调用函数(表格加载,翻页都会发生draw事件)
@@ -837,7 +853,7 @@ soya.ready(function () {
                 //获取表格指定行的数据
                 'data': function (element) {
                     this.current_row = element;
-                    return this.tableApi.row(element).data();
+                    return this._api.row(element).data();
                 },
                 'update': function (newdata, line) {
                     (line === undefined) && (line = this.current_row);
@@ -848,39 +864,15 @@ soya.ready(function () {
                             }
                         } else {
                             //注意:如果出现这样的错误"DataTables warning: table id=[dtable 实际的表的ID] - Requested unknown parameter ‘acceptId’ for row X 第几行出现了错误 "
-                            return this.tableApi.row(line).data(newdata).draw(false);
+                            return this._api.row(line).data(newdata).draw(false);
                         }
                     }
                 }
-            },
-            //页面的Toast工具,toast对象直接属于window对象
-            toast: {
-                'init': function () {
-                    toastr.options.closeButton = true;
-                    toastr.options.newestOnTop = true;
-                },
-                'success': function (msg, title) {
-                    this.init();
-                    window.toastr.success(msg, title);
-                },
-                'warning': function (msg, title) {
-                    this.init();
-                    toastr.warning(msg, title);
-                },
-                'error': function (msg, title) {
-                    this.init();
-                    toastr.error(msg, title);
-                },
-                'info': function (msg, title) {
-                    this.init();
-                    toastr.info(msg, title);
-                },
-                'clear': function () {
-                    toastr.clear();
-                }
-            },
-            //上下文菜单工具
-            contextmenu: {
+            };
+        })();
+
+        var contextmenu = (function () {
+            return {
                 //Uncaught TypeError: Cannot read property 'left' of undefined
                 //while the target menu do not exist,it will throw the error
                 /**
@@ -890,7 +882,7 @@ soya.ready(function () {
                  * @param onItem
                  * @param before
                  */
-                'create': function (menus, handler, onItem, before) {
+                create: function (menus, handler, onItem, before) {
                     var instance = soya.newInstance(this);
 
                     var id = 'cm_' + soya.utils.guid();
@@ -901,6 +893,7 @@ soya.ready(function () {
                     ul.attr('role', "menu");
                     contextmenu.append(ul);
 
+                    // console.log(contextmenu)
                     var flag = false;
                     //菜单项
                     soya.utils.each(menus, function (group) {
@@ -912,12 +905,9 @@ soya.ready(function () {
                     });
                     $("body").prepend(contextmenu);
 
-                    before || (before = function (e, c) {
-                    });
-                    onItem || (onItem = function (c, e) {
-                    });
-                    handler || (handler = function (element, tabindex, title) {
-                    });
+                    before || (before = function (e, c) {});
+                    onItem || (onItem = function (c, e) {});
+                    handler || (handler = function (element, tabindex, title) {});
 
                     //这里的target的上下文意思是 公共配置组
                     instance.target = {
@@ -934,13 +924,15 @@ soya.ready(function () {
                     return instance;
                 },
                 bind: function (selector) {
-                    selector = util.toJquery(selector);
+                    selector = utils.toJquery(selector);
+                    // console.log('##### context menu bind ######',selector);
                     selector.contextmenu(this.target);
                 }
-            },
-            //拟态框
-            modal: bootmodal,
-            form: {
+            };
+        })();
+
+        var form = (function () {
+            return {
                 /**
                  * 自动填写表单
                  * @param form 表单对象或者表单选择器
@@ -981,11 +973,15 @@ soya.ready(function () {
                 },
                 //fetch an url serialise from a form
                 'serialize': function (selector) {
-                    selector = util.toJquery(selector);
+                    console.log(selector);
+                    selector = utils.toJquery(selector);
                     return selector.serialize();
                 }
-            },
-            nestable: {
+            };
+        })();
+
+        var nestable = (function () {
+            return {
                 //create nestable list and return a new instance
                 create: function (group) {
                     var instance = soya.newInstance(this);
@@ -1050,7 +1046,7 @@ soya.ready(function () {
                         default:
                             throw "无法在该元素上创建列表:" + tagname;
                     }
-                    // callback && callback(object, linode);//每次遍历一项回调
+                    callback && callback(object, linode);//每次遍历一项回调
 
                     // console.log('##### item itemlist ol ######',object,soya.utils.checkProperty(object, 'children'));
                     //look through children if attach success
@@ -1127,7 +1123,7 @@ soya.ready(function () {
                 },
                 //active the element
                 active: function (element) {
-                    element = util.toJquery(element);
+                    element = utils.toJquery(element);
                     // this.passiveAll();//cancel all active status
                     // console.log(element,element.hasClass('dd3-content'));
                     if (element.hasClass('dd3-content')) {
@@ -1184,7 +1180,7 @@ soya.ready(function () {
                 onItemClick: function (data, element, event) {
                 },
                 attachTo: function (selector, append) {
-                    selector = util.toJquery(selector);
+                    selector = utils.toJquery(selector);
                     if (append) {
                         selector.append(this.target);
                     } else {
@@ -1193,7 +1189,7 @@ soya.ready(function () {
                     return this;
                 },
                 prependTo: function (attatchment) {
-                    attatchment = util.toJquery(attatchment);
+                    attatchment = utils.toJquery(attatchment);
                     attatchment.html('');
                     if (attatchment.length) {
                         attatchment.prepend(this.target);
@@ -1202,7 +1198,7 @@ soya.ready(function () {
                     return false;
                 },
                 appendTo: function (attatchment) {
-                    attatchment = util.toJquery(attatchment);
+                    attatchment = utils.toJquery(attatchment);
                     attatchment.html('');
                     if (attatchment.length) {
                         attatchment.appendTo(this.target);
@@ -1210,8 +1206,11 @@ soya.ready(function () {
                     }
                     return false;
                 }
-            },
-            tab: {
+            };
+        })();
+
+        var tab = (function () {
+            return {
                 _createNav: function (config) {
                     var id = soya.utils.guid();
                     var nav = $('<ul id="' + id + '" class="nav nav-tabs"></ul>');
@@ -1267,7 +1266,7 @@ soya.ready(function () {
                 _createNode4Content: function (config) {
                     if (!config.hasOwnProperty('id') || !config.hasOwnProperty('content')) return Dazzling.toast.warning('Tab must be related with an ID!');
                     var div = $('<div class="tab-pane fade" id="' + config['id'] + '"></div>');
-                    var content = util.toJquery(config['content']);
+                    var content = utils.toJquery(config['content']);
                     div.append(content);
                     return div;
                 },
@@ -1275,13 +1274,142 @@ soya.ready(function () {
                     var nav = this._createNav(config);
                     var content = this._createContent(config);
                     if (attachment) {
-                        attachment = util.toJquery(attachment);
+                        attachment = utils.toJquery(attachment);
                         attachment.html('');
                         attachment.append(nav).append(content);
                     }
                     return [nav, content];
                 }
+            };
+        })();
+        /**
+         * start the application
+         * @param infos
+         * @param itemsIds
+         */
+        var startApp = function (infos,itemsIds) {
+            var resizehandler;
+            var currentHeight;
+            var browerinfo = soya.context.getBrowserInfo();
+            var isIE8 = browerinfo.type === 'ie' && 8 === browerinfo.version;
+            var isIE9 = browerinfo.type === 'ie' && 9 === browerinfo.version;
+            var isIE10 = browerinfo.type === 'ie' && 10 === browerinfo.version;
+
+            isIE8 && thishtml.addClass('ie8 ie'); // detect ie8 version
+            isIE9 && thishtml.addClass('ie9 ie'); // detect ie9 version
+            isIE10 && thishtml.addClass('ie10 ie'); // detect IE10 version
+            (isIE8 || isIE9) && ('placeholder' in jQuery) && $('input, textarea').placeholder();//该插件存在时候开启placeholder
+
+            //****************************************
+            //init auto adjuest
+            //****************************************
+            $(window).resize(function () {
+                //quite event since only body resized not window.
+                if (isIE8 && (currentHeight == document.documentElement.clientHeight)) return;
+                if (resizehandler) clearTimeout(resizehandler);
+                resizehandler = setTimeout(function () {
+                    page.resizer.exec();
+                    // for (var i = 0; i < resizeHandlers.length; i++)  resizeHandlers[i].call();//执行调整函数
+                }, 75); // 等待window调整完成
+                // store last body client height
+                // 注意 document.body.clientHeight 和 document.documentElement.clientHeight 的区别
+                isIE8 && (currentHeight = document.documentElement.clientHeight);
+            });
+            //****************************************
+            //init sidebar
+            //****************************************
+            // 控制sidebar的显示和隐藏
+            if(soya.context.getViewPort().width <= convention['sizeSM'] || page.sidebar.lastIsClosed()){
+                page.sidebar.close();
+            }else{
+                page.sidebar.open();
             }
+            thisbody.find(".sidebar-toggler").click(function () {
+                page.sidebar.nowIsClosed() ? page.sidebar.open() : page.sidebar.close();
+                $(window).trigger('resize');
+            });
+
+            //****************************************
+            // init others
+            //****************************************
+            page.header.setSearchHandler(); // handles horizontal menu
+            page.resizer.push(page.behavior.autoContentHeight);
+
+            var userinfo = infos['user'];
+            var pageinfo = infos['page'];
+
+            utils.antu(itemsIds, userinfo);
+
+            page.header.user.setMenu(pageinfo['user_menu']);
+
+            //设置标题
+            pageinfo.hasOwnProperty('title') && page.setTitle(pageinfo['title']);
+            pageinfo.hasOwnProperty('logo') && page.setLogo(pageinfo['logo']);
+            pageinfo.hasOwnProperty('coptright') && page.footer.setCopyright(pageinfo['coptright']);
+
+            //find in children
+            var fic = function (children) {
+                var result = undefined;
+                if(soya.utils.isArray(children)){
+                    soya.utils.each(children,function (child) {
+                        // console.log(child);return ;
+                        if(child.hasOwnProperty('value')){
+                            location.href = soya.context.getBaseUri()+child['value'];
+                        }else if(child.hasOwnProperty('children')){
+                            result = fic(child['children']);
+                            if(result){
+                                location.href = soya.context.getBaseUri()+result;
+                            }
+                        }else{}
+                    });
+                }
+                return result;
+            };
+            // find first link
+            var ffl = function (sidemenu) {
+                var result = '#';
+                if(sidemenu.hasOwnProperty('value')){
+                    result = fic(sidemenu['value']);
+                }
+                return result;
+            };
+
+            //处理顶部菜单
+            page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['request_path']).active();//.active(sideractiveindex);
+            page.header.menu.getInstance().load(pageinfo['header_menu'],function(){},function (e) {
+                soya.utils.stopBubble(e);
+                var id = e.currentTarget.getAttribute('menu-id');
+                // return console.log(id,pageinfo['sidebar_menu'][id]);
+                //寻找第一个找到的链接
+                console.log(ffl(pageinfo['sidebar_menu'][id]));
+                // sidemenu.load(pageinfo['sidebar_menu'][id]);
+            }).active();
+
+            $(window).trigger('resize');
+        };
+
+        return {
+            start: startApp,
+            post: utils.doPost,
+            //工具箱
+            utils: utils,
+            //页面工具
+            page: page,
+            //datatable表格工具,一次只能操作一个表格API对象,datatable.find("tbody").on('dblclick','tr',function () {});//可以设置为双击编辑
+            //改造成return new this;
+            datatables: datatables,
+            //页面的Toast工具,toast对象直接属于window对象
+            toast: toast,
+            //上下文菜单工具
+            contextmenu: contextmenu,
+            //拟态框
+            modal: bootmodal,
+            //表单工具
+            form: form,
+            //可拖动工具
+            nestable: nestable,
+            //tab工具
+            tab: tab
         };
     })();
 });
