@@ -153,7 +153,7 @@ final class Response {
     public static function warning($message){
         self::ajaxBack([
             '_msg' => $message,
-            '_type' => self::MESSAGE_TYPE_SUCCESS,
+            '_type' => self::MESSAGE_TYPE_WARNING,
         ]);
     }
 

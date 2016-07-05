@@ -59,6 +59,11 @@ window.soya = (function(){
             return this.replace(/(\s*$)/g,'');
         };
     }
+    if(!String.prototype.beginWith){
+        String.prototype.beginWith = function (chars) {
+            return this.indexOf(chars) === 0;
+        };
+    }
 
 //-------------------------------------------- sha1 ----------------------------------------------------------------//
 
@@ -334,6 +339,14 @@ window.soya = (function(){
                     return location.protocol+"//"+location.host;
                 }
             }
+        },
+        /**
+         * 跳转到指定的链接地址
+         * 增加检查url是否合法
+         * @param url
+         */
+        redirect:function (url) {
+            location.href = url;
         },
         //get real path to this action
         getPath:function () {

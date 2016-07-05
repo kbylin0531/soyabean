@@ -176,10 +176,12 @@ class SystemController extends AdminController {
             'id'    => 1,//id of header menu config
             'value' => $this->_travelThrough($header),
         ]);
-        if($result){
-            Response::success('保存成功!');
-        }else{
+        if(false === $result){
             Response::failed('保存失败:'.$model->error());
+        }elseif(0 === $result){/* 数据库更新同样的值时不会算作更新成功 */
+            Response::warning('保存失败，可能的原因是已经保存过了！');
+        }else{
+            Response::success('保存成功!');
         }
     }
 
@@ -204,10 +206,12 @@ class SystemController extends AdminController {
             'id'    => $id,
             'value' => $sidebar,
         ]);
-        if($result){
-            Response::success('保存成功!');
-        }else{
+        if(false === $result){
             Response::failed('保存失败:'.$model->error());
+        }elseif(0 === $result){
+            Response::warning('保存失败，可能的原因是已经保存过了！');
+        }else{
+            Response::success('保存成功!');
         }
     }
 

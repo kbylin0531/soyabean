@@ -70,9 +70,11 @@ soya.ready(function () {
                 if(index instanceof Object){
                     index = index.id;
                 }
+                // console.log(index);
                 if(sidebar_menu.hasOwnProperty(index)){
                     var menu = sidebar_menu[index];
                     if(menu.hasOwnProperty('value')){
+                        active_index = index;
                         SiderNestable.load(menu['value'],function (data,element) {
                             MenuItemContextMenu.bind(element);
                         });
@@ -90,6 +92,10 @@ soya.ready(function () {
             saveHeaderMenuConfig : function () {
                 var header = HeaderNestable.serialize(true);
                 Dazzling.post(public_url+'saveHeaderMenuConfig',{ header:header});
+            },
+            saveSideMenuConfig:function () {
+                var value = SiderNestable.serialize(true);
+                Dazzling.post(public_url+"saveSidebarMenuConfig",{sidebar:value,id:active_index});
             },
             addSideMenuConfig:function () {
                 MenuAEModal.getElement("[name=value]").attr('readonly','readonly');
@@ -145,10 +151,6 @@ soya.ready(function () {
                     });
 
                 });
-            },
-            saveSideMenuConfig:function () {
-                var value = SiderNestable.serialize(true);
-                Dazzling.post(public_url+"saveSidebarMenuConfig",{sidebar:value,id:active_index});
             },
             menu:{
                 initMenuEdit:function (element,obj) {

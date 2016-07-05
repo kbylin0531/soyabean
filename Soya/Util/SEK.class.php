@@ -45,10 +45,12 @@ final class SEK {
             $dest = array_merge($dest,$sourse);
         }else{
             foreach($sourse as $key=>$val){
-                if(isset($dest[$key]) and is_array($val)){
-                    self::merge($dest[$key],$val);
-                }else{
-                    isset($sourse[$key]) and $dest[$key] = $val;
+                if(key_exists($key,$dest)){
+                    if(is_array($val)){
+                        self::merge($dest[$key],$val);
+                    }else{
+                        isset($sourse[$key]) and $dest[$key] = $val;
+                    }
                 }
             }
         }

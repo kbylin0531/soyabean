@@ -65,7 +65,9 @@ class MenuModel extends Model{
         SEK::merge($data,$info);
         SEK::filter($data,[null,false,''],true);
         $id = $info['id'];
+
         $result = $this->fields($data)->where('id = '.intval($id))->update();;
+//        \Soya\dumpout($data,$info,$result);
         return $result;
     }
 

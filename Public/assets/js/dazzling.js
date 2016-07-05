@@ -100,34 +100,33 @@ soya.ready(function () {
                     },
                     /**
                      * _createAnchor
-                     * create and return the anchor by config
-                     * @param config
+                     * create and return the anchor by data
+                     * @param data
                      * @param isappend default prepend to anchar
-                     * @param callback define Anchor href by self,format like 'function(element,config){...}'
+                     * @param callback define Anchor href by self,format like 'function(element,data){...}'
                      * @param istop
                      * @returns {jQuery}
                      * @private
                      */
-                    _hca: function (config, isappend, callback,istop) {
+                    _hca: function (data, isappend, callback,istop) {
                         istop || (istop = false);
                         var a = $(document.createElement('a'));
-                        config.hasOwnProperty('title') || (config.title = 'Untitled');
-                        a.text(" " + config.title + " ");
+                        data.hasOwnProperty('title') || (data.title = 'Untitled');
+                        a.text(" " + data.title + " ");
                         var href;
-                        callback && (href = callback(a, config));//return true value can prevent default value setting
+                        callback && (href = callback(a, data));//return true value can prevent default value setting
                         if (!href) {
-                            // console.log(config,config.hasOwnProperty('href'))
-                            config.hasOwnProperty('href') || (config.href = '#');
-                            a.attr('href', config.href);
+                            data.hasOwnProperty('href') || (data.href = '#');
+                            a.attr('href', data.href);
                         }
                         //有子菜单,设置下拉属性
-                        if(this._gc(config) && !istop){
+                        if(this._gc(data) && !istop){
                             a.attr('data-toggle', 'dropdown');
                             $(document.createElement('i')).addClass('fa fa-angle-right float-right').appendTo(a);
                         }
                         //设置了图标的情况下创建<i class="XX"></i>
-                        if (config.hasOwnProperty('icon') && config.icon) {
-                            var icon = $(document.createElement('i')).addClass(config.icon);
+                        if (data.hasOwnProperty('icon') && data.icon) {
+                            var icon = $(document.createElement('i')).addClass(data.icon);
                             isappend ? icon.appendTo(a) : icon.prependTo(a);
                         }
                         return a;
@@ -152,8 +151,9 @@ soya.ready(function () {
                             //创建并添加ul
                             soya.utils.each(children, function (child) {
                                 var li = $(document.createElement('li'));
-                                li.attr('menu-id', menuitemsconf['id']);//set menu-id for li
+                                li.attr('menu-id', child['id']);//set menu-id for li
                                 li.click(onclick);
+                                console.log(child);
                                 li.append(env._hca(child, isappend, callback));
                                 list.append(li);
                                 if (env._gc(child)) {
@@ -284,12 +284,8 @@ soya.ready(function () {
                             a.append($('<i class="float-right fa fa-angle-right"></i>'));
                         } else {
                             //create link for this anchor
-                            if (attrs['value']) {
-                                attrs['value'] = soya.context.getBaseUri() + attrs['value'];
-                            } else {
-                                attrs['value'] = 'javascript:void(0);';
-                            }
-                            a.attr('href', attrs['value']);
+                            var href = attrs['value']?soya.context.getBaseUri() + attrs['value']:'javascript:void(0);';
+                            a.attr('href', href);
                             a.attr('data-id',attrs['id']);
                         }
 
@@ -1347,6 +1343,7 @@ soya.ready(function () {
             pageinfo.hasOwnProperty('logo') && page.setLogo(pageinfo['logo']);
             pageinfo.hasOwnProperty('coptright') && page.footer.setCopyright(pageinfo['coptright']);
 
+
             //find in children
             var fic = function (children) {
                 var result = undefined;
@@ -1354,22 +1351,19 @@ soya.ready(function () {
                     soya.utils.each(children,function (child) {
                         // console.log(child);return ;
                         if(child.hasOwnProperty('value')){
-                            location.href = soya.context.getBaseUri()+child['value'];
+                            // child['value'].begin
+                            if(child['value']){
+                                result = soya.context.getBaseUri()+child['value'];
+                                return '[break]';
+                            }
                         }else if(child.hasOwnProperty('children')){
                             result = fic(child['children']);
                             if(result){
-                                location.href = soya.context.getBaseUri()+result;
+                                result = soya.context.getBaseUri()+result;
+                                return '[break]';
                             }
                         }else{}
                     });
-                }
-                return result;
-            };
-            // find first link
-            var ffl = function (sidemenu) {
-                var result = '#';
-                if(sidemenu.hasOwnProperty('value')){
-                    result = fic(sidemenu['value']);
                 }
                 return result;
             };
@@ -1379,10 +1373,19 @@ soya.ready(function () {
             page.header.menu.getInstance().load(pageinfo['header_menu'],function(){},function (e) {
                 soya.utils.stopBubble(e);
                 var id = e.currentTarget.getAttribute('menu-id');
-                // return console.log(id,pageinfo['sidebar_menu'][id]);
                 //寻找第一个找到的链接
-                console.log(ffl(pageinfo['sidebar_menu'][id]));
-                // sidemenu.load(pageinfo['sidebar_menu'][id]);
+                var url = undefined;
+                var sidemenu = pageinfo['sidebar_menu'][id];
+                // return console.log(e.currentTarget,id,pageinfo['sidebar_menu'],sidemenu);
+                if(sidemenu.hasOwnProperty('value')){
+                    // console.log(sidemenu)
+                    url = fic(sidemenu['value']);
+                }
+                if(url){
+                    soya.context.redirect(url);
+                }else{
+                    toast.warning('未设置其菜单项目！');
+                }
             }).active();
 
             $(window).trigger('resize');
