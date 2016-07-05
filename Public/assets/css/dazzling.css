@@ -23,9 +23,7 @@ li [class*=" icon-"].icon-large,li [class^=icon-].icon-large{width:1.5625em}
 .btn.dazzling:active:focus,
 .btn.dazzling:active:hover,
 .btn.dazzling:focus,
-.btn.dazzling:hover{
-    border-color:#32c5d2;color:#FFF;background-color:#32c5d2
-}
+.btn.dazzling:hover{border-color:#32c5d2;color:#FFF;background-color:#32c5d2}
 .dropdown.open>.dropdown-toggle,.dropup.open>.dropdown-toggle{border-color:#ddd}
 .dropdown-toggle:after{display:none}
 .dropdown-submenu{position:relative}
@@ -39,7 +37,6 @@ li [class*=" icon-"].icon-large,li [class^=icon-].icon-large{width:1.5625em}
 .nav.pull-right>li>.dropdown-menu:after,.nav>li>.dropdown-menu.pull-right:after{right:13px;left:auto}
 .nav.pull-right>li>.dropdown-menu .dropdown-menu,
 .nav>li>.dropdown-menu.pull-right .dropdown-menu{right:100%;left:auto;margin-right:-1px;margin-left:0}
-
 .dropdown-submenu:hover>.dropdown-menu{display:block}
 .dropdown-submenu:hover>a:after{border-left-color:#fff}
 .dropdown.inline .dropdown-menu{display:inline-block;position:relative}

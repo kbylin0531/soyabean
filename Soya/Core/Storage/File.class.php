@@ -338,6 +338,13 @@ class File implements StorageInterface {
         return $this->_write($filepath,$content,$write_encode,$text_encode);
     }
 
+    /**
+     * @param $filepath
+     * @param $content
+     * @param null $write_encode
+     * @param string $text_encode
+     * @return bool
+     */
     private function _write($filepath,$content,$write_encode=null,$text_encode='UTF-8'){
         //文件父目录检测
         $dir = dirname($filepath);

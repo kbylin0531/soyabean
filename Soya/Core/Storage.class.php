@@ -50,6 +50,10 @@ class Storage extends \Soya {
      */
     protected $_driver = null;
 
+    /**
+     * Storage constructor.
+     * @param false|null|string $identify
+     */
     public function __construct($identify){
         parent::__construct($identify);
     }

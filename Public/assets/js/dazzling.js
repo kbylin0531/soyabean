@@ -19,7 +19,8 @@ soya.ready(function () {
 
         var global = {
             header_active_index:-1,
-            sidebar_active_index:-1
+            sidebar_active_index:-1,
+            header_dropdown_icon:'fa fa-angle-right'
         };
 
         var thishtml = $('html');
@@ -32,7 +33,7 @@ soya.ready(function () {
                 header_menu:null,
                 getHeader:function () {
                     if(!this.header) this.header = $('.page-header');
-                    if(!this.header.length) throw  "page-header not found!";
+                    if(!this.header.length) throw "class 'page-header' not found!";
                     return this.header;
                 },
                 getHeaderMenu:function () {
@@ -40,10 +41,12 @@ soya.ready(function () {
                     if(!this.header_menu.length) throw "page-header-menu not found!";
                     return this.header_menu;
                 },
-
+                /**
+                 * 设置查询处理函数
+                 * @param handler
+                 */
                 setSearchHandler:function (handler) {
-                    if (!handler) handler = function () { console.log('No handler has been set for header search');};
-
+                    if (!handler) return;
                     var pageheader = this.getHeader();
                     pageheader.on('click', '.search-form', function () {
                         var form_controll = pageheader.find('.form-control');
@@ -88,27 +91,27 @@ soya.ready(function () {
                     },
                     /**
                      * get the children attribute of element.It will return an array if attribute exist but null while not exist
-                     * @param element
-                     * @param childrenattrname
+                     * @param ele
+                     * @param attr
                      * @returns {boolean}
                      * @private
                      */
-                    _gc: function (element, childrenattrname) {
-                        if (!childrenattrname) childrenattrname = 'children';
-                        return (element.hasOwnProperty(childrenattrname) && element[childrenattrname]) ?
-                            element[childrenattrname] : false;
+                    _gc: function (ele, attr) {
+                        if (!attr) attr = 'children';
+                        return (ele.hasOwnProperty(attr) && ele[attr]) ?
+                            ele[attr] : false;
                     },
                     /**
                      * _createAnchor
                      * create and return the anchor by data
                      * @param data
-                     * @param isappend default prepend to anchar
+                     * @param append default prepend to anchar
                      * @param callback define Anchor href by self,format like 'function(element,data){...}'
                      * @param istop
                      * @returns {jQuery}
                      * @private
                      */
-                    _hca: function (data, isappend, callback,istop) {
+                    _hca: function (data, append, callback,istop) {
                         istop || (istop = false);
                         var a = $(document.createElement('a'));
                         data.hasOwnProperty('title') || (data.title = 'Untitled');
@@ -122,28 +125,28 @@ soya.ready(function () {
                         //有子菜单,设置下拉属性
                         if(this._gc(data) && !istop){
                             a.attr('data-toggle', 'dropdown');
-                            $(document.createElement('i')).addClass('fa fa-angle-right float-right').appendTo(a);
+                            $(document.createElement('i')).addClass(global.header_dropdown_icon).addClass('float-right').appendTo(a);
                         }
                         //设置了图标的情况下创建<i class="XX"></i>
                         if (data.hasOwnProperty('icon') && data.icon) {
                             var icon = $(document.createElement('i')).addClass(data.icon);
-                            isappend ? icon.appendTo(a) : icon.prependTo(a);
+                            append ? icon.appendTo(a) : icon.prependTo(a);
                         }
                         return a;
                     },
                     /**
                      * _createUnorderedLists
                      * create and return the
-                     * @param menuitemsconf
+                     * @param data
                      * @param isappend
                      * @param callback for create anchor
                      * @param onclick 点击菜单时的回掉函数
                      * @returns {*|jQuery}
                      * @private
                      */
-                    _hcul: function (menuitemsconf, isappend, callback,onclick) {
+                    _hcul: function (data, isappend, callback,onclick) {
                         //不存在子菜单或者子菜单为空的情况下时直接返回
-                        var children = this._gc(menuitemsconf);
+                        var children = this._gc(data);
                         var list = $(document.createElement('ul')).addClass('dropdown-menu');
                         if (children) {
                             var env = this;
@@ -177,17 +180,17 @@ soya.ready(function () {
                             soya.utils.stopBubble(e);
                         });
                         var env = this;
-                        soya.utils.each(data, function (menuitem) {
-                            // console.log(menuitem)
+                        // return console.log(data);
+                        soya.utils.each(data, function (item) {
+                            // console.log(item)
                             var li = $(document.createElement('li'));
                             li.addClass('classic-menu-dropdown');
-                            li.attr('menu-id', menuitem['id']);//set menu-id for li
+                            li.attr('menu-id', item['id']);//set menu-id for li
                             li.click(onclick);
-                            var haschild = env._gc(menuitem) ? true : false;
-
-                            menuitem['icon'] = haschild?'fa fa-angle-down float-right':false;
-                            li.append(env._hca(menuitem, true, callback,true));//true is due to 'icon-angle-down' is append
-                            if (haschild) li.append(env._hcul(menuitem, false, callback,onclick));// icon is aheand the inner title
+                            var haschild = env._gc(item) ? true : false;
+                            item['icon'] = haschild?'fa fa-angle-down float-right':false;
+                            li.append(env._hca(item, true, callback,true));//true is due to 'icon-angle-down' is append
+                            if (haschild) li.append(env._hcul(item, false, callback,onclick));// icon is aheand the inner title
 
                             env.target.append(li);
                         });
@@ -316,23 +319,18 @@ soya.ready(function () {
                      * @returns {Object}
                      */
                     load: function (data, path) {
+
+                        // console.log(data,path)
                         var env = this;
                         if(path){
                             var result = this.fo(data, path, 'value');
-                            if(false === result){
-                                throw "No !!!";
-                            }
-
-                            // console.log(data, path,result)
+                            if(false === result)console.log('找不到该链接对应的顶级菜单');
+                            // console.log(data, path,result);
                             global.header_active_index = result[0];
                             if(result[1]){/* 存在子菜单的情况下 */
                                 global.sidebar_active_index = result[1]['id'];
                                 // console.log(global);
-
-                                var sideconf = data[result[0]];
-                                var sidemenu = sideconf['value'];
-
-                                soya.utils.each(sidemenu, function (topitem) {
+                                soya.utils.each(data[result[0]]['value'], function (topitem) {
                                     // console.log(topitem);
                                     var li_navitem = $(document.createElement('li')).addClass('nav-item');
                                     var hasSubmenu = topitem.hasOwnProperty('children');
@@ -422,17 +420,16 @@ soya.ready(function () {
                     fo: function (menus, compval,feature,featurecompcallback) {
                         var env = this;
                         var result = soya.utils.each(menus,function (menu,id) {
-                            if(menu.hasOwnProperty('value') && menu['value']){
+                            // console.log(menus,menu,id);return;
+                            if(menu.hasOwnProperty('value') && menu['value'].length){
                                 // console.log(menu['value'], compval);
                                 var result = env.fi(menu['value'], compval,feature,featurecompcallback);
                                 // console.log(result)
-                                if(false !== result){
-                                    return [id,result];
-                                }
+                                if(result) return [id,result];
                             }
                         });
                         // console.log('######## Side Result #########',result);
-                        return result !== undefined?result:false;
+                        return result?result:false;
                     },
                     active:function (index) {
                         if(undefined === index) index = global.sidebar_active_index;
@@ -1347,13 +1344,15 @@ soya.ready(function () {
             //find in children
             var fic = function (children) {
                 var result = undefined;
+                // return console.log(children);
                 if(soya.utils.isArray(children)){
                     soya.utils.each(children,function (child) {
-                        // console.log(child);return ;
+                        // return console.log(child);
                         if(child.hasOwnProperty('value')){
                             // child['value'].begin
                             if(child['value']){
                                 result = soya.context.getBaseUri()+child['value'];
+                                // console.log(child,result);return ;
                                 return '[break]';
                             }
                         }else if(child.hasOwnProperty('children')){
@@ -1368,19 +1367,21 @@ soya.ready(function () {
                 return result;
             };
 
+
             //处理顶部菜单
             page.sidebar.menu.getInstance().load(pageinfo['sidebar_menu'], pageinfo['request_path']).active();//.active(sideractiveindex);
+            // return console.log(pageinfo);
             page.header.menu.getInstance().load(pageinfo['header_menu'],function(){},function (e) {
                 soya.utils.stopBubble(e);
                 var id = e.currentTarget.getAttribute('menu-id');
                 //寻找第一个找到的链接
                 var url = undefined;
                 var sidemenu = pageinfo['sidebar_menu'][id];
-                // return console.log(e.currentTarget,id,pageinfo['sidebar_menu'],sidemenu);
+
                 if(sidemenu.hasOwnProperty('value')){
-                    // console.log(sidemenu)
                     url = fic(sidemenu['value']);
                 }
+                // return  console.log(sidemenu,url);
                 if(url){
                     soya.context.redirect(url);
                 }else{
