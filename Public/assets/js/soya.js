@@ -12,6 +12,13 @@
  * typeof 运算符把类型信息当作字符串返回。typeof 返回值有六种可能：
  *  "number," "string," "boolean," "object," "function," 和 "undefined."
  * Created by kbylin on 5/14/16.
+ *
+ * 性能分析结果（By chrome51）：
+ *  144.36 ms Loading
+ *  744.11 ms Scripting
+ *  52.64 ms Rendering
+ *  2.51 ms Painting
+ *
  */
 window.soya = (function(){
     //开启严格模式节约时间
@@ -453,6 +460,46 @@ window.soya = (function(){
 
     var utils = {
         /**
+         * 检查dom对象是否存在指定的类名称
+         * @param obj
+         * @param cls
+         * @returns {Array|{index: number, input: string}}
+         */
+        hasClass:function(obj, cls) {
+            return obj.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+        },
+        /**
+         * 添加类
+         * @param obj
+         * @param cls
+         */
+        addClass:function (obj, cls) {
+            if (!this.hasClass(obj, cls)) obj.className += " " + cls;
+        },
+        /**
+         * 删除类
+         * @param obj
+         * @param cls
+         */
+        removeClass: function (obj, cls) {
+            if (hasClass(obj, cls)) {
+                var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+                obj.className = obj.className.replace(reg, ' ');
+            }
+        },
+        /**
+         * 逆转类
+         * @param obj
+         * @param cls
+         */
+        toggleClass:function (obj,cls){
+            if(hasClass(obj,cls)){
+                removeClass(obj, cls);
+            }else{
+                addClass(obj, cls);
+            }
+        },
+        /**
          * sha1加密
          * @param s
          */
@@ -808,7 +855,6 @@ window.soya = (function(){
             return false;
         }
     };
-
     //监听窗口状态变化
     window.document.onreadystatechange = function(){
         // console.log(window.document.readyState);
@@ -831,18 +877,22 @@ window.soya = (function(){
         },
         context:context,
         utils:utils,
-        newElement:function (regular) {
-            var tagname  = regular, classes, id;
-            if(regular.indexOf('.') > 0 ){
-                classes = regular.split(".");
-                regular = classes.shift();
+        /**
+         * 新建一个DOM元素
+         * @param expression 元素表达式
+         */
+        newElement:function (expression) {
+            var tagname  = expression, classes, id;
+            if(expression.indexOf('.') > 0 ){
+                classes = expression.split(".");
+                expression = classes.shift();
             }
-            if(regular.indexOf("#") > 0){
-                var tempid = regular.split("#");
+            if(expression.indexOf("#") > 0){
+                var tempid = expression.split("#");
                 tagname = tempid[0];
                 id = tempid[1];
             }else{
-                tagname = regular
+                tagname = expression
             }
             var element = document.createElement(tagname);
             id && element.setAttribute('id',id);

@@ -25,6 +25,19 @@ soya.ready(function () {
 
         var thishtml = $('html');
         var thisbody = $("body");
+        var thiswindow = $(window);
+
+        $.prototype.fetchObject = function () {
+            var values = {};
+            var inputs = this.find("input[name],select[name],checkbox");
+            // console.log(inputs)
+            for (var i = 0; i < inputs.length; i++) {
+                var input = inputs.eq(i);
+                var inputname = input.attr('name');
+                values[inputname] = $.trim(input.val());
+            }
+            return values;
+        };
 
         //Conponents on page
         var page = (function () {
@@ -439,18 +452,6 @@ soya.ready(function () {
                 }
             };
 
-            var adjustHeight = function () {
-                var height = soya.context.getViewPort().height;
-                var target = arguments[0];
-                for(var i = 1 ; i < arguments.length;i++){
-                    var element = arguments[i];
-                    element = utils.toJquery(element);
-                    height -= element.outerHeight();
-                    // console.log(height)
-                }
-                target.css('min-height' , height + 'px');
-            };
-
             return {
                 setTitle:function (title) {
                     $("title").text(title);
@@ -484,9 +485,15 @@ soya.ready(function () {
                 },
 
                 behavior:{
-                    adjustHeight:adjustHeight,
-                    autoContentHeight: function () {
-                        adjustHeight($('.page-content'),page.header.getHeader(),page.footer.getFooter());
+                    adjustHeight:function () {
+                        var height = soya.context.getViewPort().height;
+                        var target = arguments[0];
+                        for(var i = 1 ; i < arguments.length;i++){
+                            var element = arguments[i];
+                            element = utils.toJquery(element);
+                            height -= element.outerHeight();
+                        }
+                        target.css('min-height' , height + 'px');
                     }
                 },
 
@@ -499,24 +506,22 @@ soya.ready(function () {
                     exec:function (index) {
                         if(undefined === index) {
                             for (var i = 0; i < this.handlers.length; i++)  this.handlers[i].call();//执行调整函数
-                        }else{
-                            if((index >= 0) && (index <this.handlers.length)){
-                                this.handlers[index].call();
-                            }
+                        }else if((index >= 0) && (index <this.handlers.length)){
+                            this.handlers[index].call();
                         }
                     }
                 },
 
                 init: function (selector) {
                     if (undefined === selector) selector = '.page-toolbar .dropdown-menu';//默认的选择器
-                    !this.page_action_list && (this.page_action_list = utils.toJquery(selector));
+                    this.page_action_list || (this.page_action_list = utils.toJquery(selector));
                 },
                 page_action_list: null,
                 //注册操作:操作名称,点击时候的回调函数
                 registerAction: function (actionName, callback, icon) {
                     !this.page_action_list && (this.page_action_list = $('.page-toolbar .dropdown-menu'));
                     this.init();
-                    var li = $("<li></li>");
+                    var li = $(document.createElement('li'));
                     var a;
                     if (icon) {
                         a = $('<a href="javascript:void(0);" id="la_' + soya.utils.guid() + '"><i class="fa ' + icon + '"></i> ' + actionName + '</a>');
@@ -525,25 +530,11 @@ soya.ready(function () {
                     }
                     this.page_action_list.append(li.append(a));
                     a.click(callback);
-                },
-                DataManager: {}
+                }
             };
         })();
 
         //do some compatibility relatid work
-        (function () {
-            $.prototype.fetchObject = function () {
-                var values = {};
-                var inputs = this.find("input[name],select[name],checkbox");
-                // console.log(inputs)
-                for (var i = 0; i < inputs.length; i++) {
-                    var input = inputs.eq(i);
-                    var inputname = input.attr('name');
-                    values[inputname] = $.trim(input.val());
-                }
-                return values;
-            };
-        })();
 
         var toast = (function () {
             if(!toastr){
@@ -697,7 +688,7 @@ soya.ready(function () {
              * @param option modal配置
              * @returns {*}
              */
-            'create': function (selector, option) {
+            create: function (selector, option) {
                 var config = {
                     'title': null,
                     'confirmText': '提交',
@@ -791,7 +782,9 @@ soya.ready(function () {
             title: function (newtitle) {
                 var title = this.target.find(".modal-title");
                 if (!title.length) {
-                    this.target.find(".modal-header").append($('<h4 class="modal-title">' + newtitle + '</h4>'));
+                    var h = soya.newElement('h4.modal-title');
+                    h.innerHTML = newtitle;
+                    this.target.find(".modal-header").append(h);
                 }
                 title.text(newtitle);
                 return this;
@@ -808,14 +801,14 @@ soya.ready(function () {
 
         var datatables = (function () {
             return {
-                '_api': null,//datatable的API对象
-                "dtElement": null, // datatable的jquery对象
-                'current_row': null,//当前操作的行,可能是一群行
+                _api: null,//datatable的API对象
+                _ele: null, // datatable的jquery对象 dtElement
+                _cr: null,//当前操作的行,可能是一群行 current_row
                 //设置之后的操作所指定的DatatableAPI对象
-                'bind': function (dtJquery, options) {
+                bind: function (dtJquery, options) {
                     dtJquery = utils.toJquery(dtJquery);
                     var newinstance = soya.newInstance(this);
-                    newinstance.dtElement = dtJquery;
+                    newinstance._ele = dtJquery;
 
                     var convention = {
                         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
@@ -829,27 +822,27 @@ soya.ready(function () {
                     /* this 对象同于链式调用 */
                 },
                 //为tableapi对象加载数据,参数二用于清空之前的数据
-                'load': function (data, clear) {
+                load: function (data, clear) {
                     if (!this._api) return Dazzling.toast.error("No Datatable API binded!");
                     if (undefined === clear || clear) this._api.clear();//clear为true或者未设置时候都会清除之前的表格内容
                     this._api.rows.add(data).draw();
                     return this;
                 },
                 //表格发生了draw事件时设置调用函数(表格加载,翻页都会发生draw事件)
-                'onDraw': function (callback) {
-                    if (!this.dtElement) return Dazzling.toast.error("No Datatables binded!");
-                    this.dtElement.on('draw.dt', function (event, settings) {
+                onDraw: function (callback) {
+                    if (!this._ele) return Dazzling.toast.error("No Datatables binded!");
+                    this._ele.on('draw.dt', function (event, settings) {
                         callback(event, settings);
                     });
                     return this;
                 },
                 //获取表格指定行的数据
-                'data': function (element) {
-                    this.current_row = element;
+                data: function (element) {
+                    this._cr = element;
                     return this._api.row(element).data();
                 },
-                'update': function (newdata, line) {
-                    (line === undefined) && (line = this.current_row);
+                update: function (newdata, line) {
+                    (line === undefined) && (line = this._cr);
                     if (line) {
                         if (soya.utils.isArray(line)) {
                             for (var i = 0; i < line.length; i++) {
@@ -1204,7 +1197,8 @@ soya.ready(function () {
 
         var tab = (function () {
             return {
-                _createNav: function (config) {
+                //_createNav
+                _cnv: function (config) {
                     var id = soya.utils.guid();
                     var nav = $('<ul id="' + id + '" class="nav nav-tabs"></ul>');
                     var isfirst = true;
@@ -1220,7 +1214,7 @@ soya.ready(function () {
                             ul = $('<ul class="dropdown-menu" role="menu" aria-labelledby="' + guid + '"></ul>');
                             for (var y in children) {
                                 if (!children.hasOwnProperty(y)) continue;
-                                ul.append(this._createNode(children[y]));
+                                ul.append(this._cn(children[y]));
                             }
                             node.append(ul);
                         } else {
@@ -1237,26 +1231,29 @@ soya.ready(function () {
                     }
                     return nav;
                 },
-                _createNode: function (node) {
+                //_createNode
+                _cn: function (node) {
                     if (!node.hasOwnProperty('title')) return Dazzling.toast.warning('Tab require a title!');
                     if (!node.hasOwnProperty('id')) return Dazzling.toast.warning('Tab must be related with an ID!');
                     return $('<li><a href="#' + node['id'] + '" data-toggle="tab">' + node['title'] + '</a></li>');
                 },
-                _createContent: function (config) {
+                //_createContent
+                _cc: function (config) {
                     var content = $('<div id="' + soya.utils.guid() + '" class="tab-content"></div>');
                     for (var x = 0; x < config.length; x++) {
                         if (config[x].hasOwnProperty('children')) {/*下拉*/
                             for (var y in config[x]['children']) {
                                 if (!config[x]['children'].hasOwnProperty(y)) continue;
-                                content.append(this._createNode4Content(config[x]['children'][y]));
+                                content.append(this._cn4c(config[x]['children'][y]));
                             }
                         } else {
-                            content.append(this._createNode4Content(config[x]));
+                            content.append(this._cn4c(config[x]));
                         }
                     }
                     return content;
                 },
-                _createNode4Content: function (config) {
+                //_cn4Content
+                _cn4c: function (config) {
                     if (!config.hasOwnProperty('id') || !config.hasOwnProperty('content')) return Dazzling.toast.warning('Tab must be related with an ID!');
                     var div = $('<div class="tab-pane fade" id="' + config['id'] + '"></div>');
                     var content = utils.toJquery(config['content']);
@@ -1264,8 +1261,8 @@ soya.ready(function () {
                     return div;
                 },
                 create: function (config, attachment) {
-                    var nav = this._createNav(config);
-                    var content = this._createContent(config);
+                    var nav = this._cnv(config);
+                    var content = this._cc(config);
                     if (attachment) {
                         attachment = utils.toJquery(attachment);
                         attachment.html('');
@@ -1281,12 +1278,12 @@ soya.ready(function () {
          * @param itemsIds
          */
         var startApp = function (infos,itemsIds) {
-            var resizehandler;
-            var currentHeight;
-            var browerinfo = soya.context.getBrowserInfo();
-            var isIE8 = browerinfo.type === 'ie' && 8 === browerinfo.version;
-            var isIE9 = browerinfo.type === 'ie' && 9 === browerinfo.version;
-            var isIE10 = browerinfo.type === 'ie' && 10 === browerinfo.version;
+            var rh;//resizehandler
+            var ch;//currentHeight
+            var brower = soya.context.getBrowserInfo();
+            var isIE8 = brower.type === 'ie' && 8 === brower.version;
+            var isIE9 = brower.type === 'ie' && 9 === brower.version;
+            var isIE10 = brower.type === 'ie' && 10 === brower.version;
 
             isIE8 && thishtml.addClass('ie8 ie'); // detect ie8 version
             isIE9 && thishtml.addClass('ie9 ie'); // detect ie9 version
@@ -1296,17 +1293,17 @@ soya.ready(function () {
             //****************************************
             //init auto adjuest
             //****************************************
-            $(window).resize(function () {
+            thiswindow.resize(function () {
                 //quite event since only body resized not window.
-                if (isIE8 && (currentHeight == document.documentElement.clientHeight)) return;
-                if (resizehandler) clearTimeout(resizehandler);
-                resizehandler = setTimeout(function () {
+                if (isIE8 && (ch == document.documentElement.clientHeight)) return;
+                if (rh) clearTimeout(rh);
+                rh = setTimeout(function () {
                     page.resizer.exec();
-                    // for (var i = 0; i < resizeHandlers.length; i++)  resizeHandlers[i].call();//执行调整函数
+                    // for (var i = 0; i < rhs.length; i++)  rhs[i].call();//执行调整函数
                 }, 75); // 等待window调整完成
                 // store last body client height
                 // 注意 document.body.clientHeight 和 document.documentElement.clientHeight 的区别
-                isIE8 && (currentHeight = document.documentElement.clientHeight);
+                isIE8 && (ch = document.documentElement.clientHeight);
             });
             //****************************************
             //init sidebar
@@ -1317,16 +1314,19 @@ soya.ready(function () {
             }else{
                 page.sidebar.open();
             }
-            thisbody.find(".sidebar-toggler").click(function () {
+            // console.log(document.getElementsByClassName('sidebar-toggler')[0]);
+            document.getElementsByClassName('sidebar-toggler')[0].onclick = function () {
                 page.sidebar.nowIsClosed() ? page.sidebar.open() : page.sidebar.close();
-                $(window).trigger('resize');
-            });
+                thiswindow.trigger('resize');
+            };
 
             //****************************************
             // init others
             //****************************************
             page.header.setSearchHandler(); // handles horizontal menu
-            page.resizer.push(page.behavior.autoContentHeight);
+            page.resizer.push(function () {
+                page.behavior.adjustHeight(page.content.getContent(),page.header.getHeader(),page.footer.getFooter());
+            });
 
             var userinfo = infos['user'];
             var pageinfo = infos['page'];
@@ -1339,7 +1339,6 @@ soya.ready(function () {
             pageinfo.hasOwnProperty('title') && page.setTitle(pageinfo['title']);
             pageinfo.hasOwnProperty('logo') && page.setLogo(pageinfo['logo']);
             pageinfo.hasOwnProperty('coptright') && page.footer.setCopyright(pageinfo['coptright']);
-
 
             //find in children
             var fic = function (children) {
@@ -1389,7 +1388,7 @@ soya.ready(function () {
                 }
             }).active();
 
-            $(window).trigger('resize');
+            thiswindow.trigger('resize');
         };
 
         return {

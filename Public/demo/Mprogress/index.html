@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>网页加载进度条插件MProgress.js - 站长素材</title>
+
+<link rel="stylesheet" type="text/css" href='css/demo.css' />
+<link rel="stylesheet" type="text/css" href='dist/css/mprogress.min.css' />
+
+</head>
+<body>
+<div class='contents'>
+  <div class='demo-block intro'>
+	  <p> Mprogress.js 是一款Google Material Design风格的线性进度条插件。  </p> 
+	  <p> 它通过纯JS和CSS3来制作，没有任何外部依赖库。  </p>
+	  <p> 你可以选择4种类型的进度条效果。</p>
+</div>
+<div class='demo-block'>
+	<h3>类型1: Determinate</h3>
+
+	<p>Source code:</p>
+	<p>
+		<div class="demo-code">
+			var mprogress = new Mprogress();
+		</div>
+	</p>
+	<div> ↓ ↓ ↓ ↓ ↓ ↓  点击下面的按钮，进度条效果在页面顶部  ↓  ↓  ↓  ↓ ↓ ↓ </div>
+	<span class='demo-button' id='demoDeStart'>start</span>
+	<span class='demo-button' id='demoDeEnd'>end</span>
+	<span class='demo-button' id='demoDeSet'>set</span>
+	<span class='demo-button' id='demoDeInc'>inc</span>
+	<p>
+	<span class="demo-code short">mprogress.start()</span> &mdash;
+		开始和显示进度条。
+	 </p>
+	 <p>
+	 <span class="demo-code short">mprogress.end()</span> &mdash;
+		结束和隐藏进度条。
+  </p>
+  <p>
+	<span class="demo-code short">mprogress.set(0.4)</span> &mdash;
+	 设置进度条的百分比。
+  </p>
+  <p>
+	<span class="demo-code short">mprogress.inc()</span> &mdash;
+	增加一个刻度值。
+  </p>
+</div>
+<div class="demo-block">
+	<h3>类型2 : Buffer</h3>
+	<p>Source code:</p>
+	<div class="demo-code">
+		var mprogress2 = new Mprogress({
+		<p class="indent">
+			template: 2,
+		</p>
+		<p class="indent">
+			parent: '#demoBuffer'
+		</p>
+		});
+	</div>
+	<p>点击下面的按钮查看效果，进度条效果在按钮下边。</p>
+	<span class="demo-button" id="demoBufferStart"> start </span>
+	<span class="demo-button" id="demoBufferEnd"> end </span>
+	<span class='demo-button' id='demoBufferSet'>set</span>
+	<span class='demo-button' id='demoBufferInc'>inc</span>
+	<span class='demo-button btn-big' id='demoBufferSetBuffer'>setBuffer</span>
+
+	<div id="demoBuffer" class="demo-bar"></div>
+</div>
+<div class="demo-block">
+	<h3>类型3: Indeterminate</h3>
+	<p>Source code:</p>
+	<div class="demo-code">
+		var mprogress3 = new Mprogress({
+		<p class="indent">
+		template: 3,
+		</p>
+		<p class="indent">
+		parent: '#demoIn'
+		</p>
+		});
+	</div>
+	<p>点击下面的按钮查看效果，进度条效果在按钮下边。</p>
+	<span class="demo-button" id="demoInStart"> start </span>
+	<span class="demo-button" id="demoInEnd"> end </span>
+	<div id="demoIn" class="demo-bar"></div>
+</div>     
+<div class="demo-block">
+	<h3>类型4: Query Indeterminate and Determinate</h3>
+	<p>Source code:</p>
+	<div class="demo-code">
+		var mprogress4 = new Mprogress({
+		<p class="indent">
+		template: 4,
+		</p>
+		<p class="indent">
+		parent: '#demoQuery'
+		</p>
+		});
+	</div>
+	<p>点击下面的按钮查看效果，进度条效果在按钮下边。</p>
+	<span class="demo-button" id="demoQueryStart"> start </span>
+	<span class="demo-button" id="demoQueryEnd"> end </span>
+	<div id="demoQuery" class="demo-bar"></div>
+</div>
+
+</div>
+
+<script src='js/zepto.min.js'></script>
+<script src='dist/js/mprogress.min.js'></script>
+<script src='js/demo.js'></script>
+
+<div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';">
+<p>适用浏览器：360、FireFox、Chrome、Safari、Opera、傲游、搜狗、世界之窗. 不支持IE8及以下浏览器。</p>
+<p>来源：<a href="http://sc.chinaz.com/" target="_blank">站长素材</a></p>
+</div>
+</body>
+</html>
