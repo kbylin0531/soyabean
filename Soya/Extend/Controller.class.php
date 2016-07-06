@@ -22,6 +22,10 @@ class Controller extends \Soya{
         'VIEW_DRIVER_INDEX'  => 1,
     ];
 
+    /**
+     * Controller constructor.
+     */
+    public function __construct(){}
 
     /**
      * 分配给模板的变量集合

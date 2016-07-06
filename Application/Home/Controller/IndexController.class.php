@@ -7,16 +7,30 @@
  */
 
 namespace Application\Home\Controller;
+use Application\System\Common\Library\CommonController;
+use Application\System\Member\Common\Logic\LoginLogic;
 
+/**
+ * Class IndexController
+ * @package Application\Home\Controller
+ */
+class IndexController extends CommonController{
+    /**
+     * IndexController constructor.
+     * @param null $identify
+     */
+    public function __construct($identify=null){
+        define('REQUEST_PATH','/'.REQUEST_MODULE.'/'.REQUEST_CONTROLLER.'/'.REQUEST_ACTION);
+    }
 
-class IndexController {
+    protected function __checkLogin(){
+        if(!LoginLogic::getInstance()->isLogin()){
+            $this->go('/Home/User/login');
+        }
+    }
 
     public function index(){
         echo 'Hello Soya!';
-    }
-
-    public function index2(){
-        echo 'Hello Soya2!';
     }
 
 
