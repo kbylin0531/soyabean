@@ -77,6 +77,21 @@ class View extends \Soya{
     }
 
     /**
+     * 设置模板替换字符串
+     * @param string|array $str
+     * @param string $replacement
+     * @return void
+     */
+    public function registerParsingString($str,$replacement){
+        if(is_array($str)){
+            foreach ($str as $key=>$val){
+                $this->_driver->registerParsingString($key,$val);
+            }
+        }else{
+            $this->_driver->registerParsingString($str,$replacement);
+        }
+    }
+    /**
      * 显示模板
      * @param array $context 模板调用上下文环境，包括模块、控制器、方法和模板主题
      * @param null $cache_id

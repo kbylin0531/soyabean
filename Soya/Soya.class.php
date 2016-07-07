@@ -240,8 +240,14 @@ class Soya {
          * @param E $e ParseError(newer in php7) or Exception
          * @return void
          */
-        $handler or $handler = function (E $e) {
-            IS_REQUEST_AJAX and Response::failed($e->getMessage());
+        $handler or $handler = function ($e) {
+            if(IS_REQUEST_AJAX){
+                if($e instanceof E){
+                    Response::failed($e->getMessage());
+                }else{
+                    Response::failed(var_export($e,true));
+                }
+            }
             Response::cleanOutput();
 
             $traceString = $e->getTraceAsString();
@@ -275,7 +281,7 @@ class Soya {
          */
         $handler or $handler = function (){
             self::recordStatus("script_shutdown");
-            DEBUG_MODE_ON and !IS_REQUEST_AJAX and self::showTrace();//show the trace info
+            PAGE_TRACE_ON and !IS_REQUEST_AJAX and self::showTrace();//show the trace info
 
             if(self::$_convention['LITE_ON']){ //rebuild if lite file not exist
                 self::recordStatus('create_lite_begin');

@@ -13,7 +13,7 @@ define('IS_METHOD_POST',strtoupper($_SERVER['REQUEST_METHOD']) === 'POST');
 define('REQUEST_TIME',$_SERVER['REQUEST_TIME']);
 //---------------------------------- mode constant -------------------------------------//
 defined('DEBUG_MODE_ON') or define('DEBUG_MODE_ON', true);
-
+defined('PAGE_TRACE_ON') or define('PAGE_TRACE_ON', true);
 //---------------------------------- variable type constant ------------------------------//
 const TYPE_BOOL     = 'boolean';
 const TYPE_INT      = 'integer';

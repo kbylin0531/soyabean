@@ -19,7 +19,6 @@ class Controller extends \Soya{
 
     const CONF_NAME = 'controller';
     const CONF_CONVENTION = [
-        'VIEW_DRIVER_INDEX'  => 1,
     ];
 
     /**
@@ -108,7 +107,7 @@ class Controller extends \Soya{
         }else{
             $context = $this->parseTemplateLocation($template);
         }
-        $view = View::getInstance(self::getConfig('VIEW_DRIVER_INDEX'));
+        $view = View::getInstance();
         //模板变量导入
         $view->assign($this->_tVars);
 

@@ -7,6 +7,8 @@
  */
 namespace Soya\Extend;
 
+use Soya\Core\Exception;
+
 class Verify extends \Soya{
     const CONF_NAME = 'think/verify';
     const CONF_CONVENTION = [
@@ -121,6 +123,9 @@ class Verify extends \Soya{
         // 绘验证码
         $code = array(); // 验证码
         $codeNX = 0; // 验证码第N个字符的左边距
+        if(!function_exists('imagettftext')){
+            Exception::throwing('未安装GD库或者freetype库！');
+        }
         if($this->config['useZh']){ // 中文验证码
             for ($i = 0; $i<$this->config['length']; $i++) {
                 $code[$i] = iconv_substr($this->config['zhSet'],floor(mt_rand(0,mb_strlen($this->config['zhSet'],'utf-8')-1)),1,'utf-8');

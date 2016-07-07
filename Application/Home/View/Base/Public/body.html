@@ -1,0 +1,30 @@
+<block name="header"></block>
+<div id="main-container" class="admin_container">
+    <div class="sidebar">
+        <ul class="sidenav">
+            <li>
+                <a class="sidenav_parent" href="">
+                    <!--<img src="">-->
+                    now_top_menu_name</a>
+                <ul class="sidenav_sub">
+                    <li class="{ vo.class}" data-id="{ vo.id}"><a href=" "> { vo.title} </a><b class="active_arrow"></b>
+                    <li class="{ vo.class}" data-id="{ vo.id}"><a href=" "> { vo.title} </a><b class="active_arrow"></b>
+                    <li class="{ vo.class}" data-id="{ vo.id}"><a href=" "> { vo.title} </a><b class="active_arrow"></b>
+                    <li class="{ vo.class}" data-id="{ vo.id}"><a href=" "> { vo.title} </a><b class="active_arrow"></b>
+                    </li>
+                </ul>
+            </li>
+            <li><a class="sidenav_parent" href="javascript:;"> <img src="__IMG__/ico1.png"/> 其它功能</a>
+                <ul class="sidenav_sub" style="display:none">
+                    <li class="{ navClass[$vo[name]]}"><a href="{ vo[addons_url]}" title="{ vo.description}"> <i
+                            class="icon-chevron-right">
+                        <img src="{ vo.icon}"/>
+                    </i> { vo.title} </a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="main_body">
+        <block name="body"></block>
+    </div>
+</div>

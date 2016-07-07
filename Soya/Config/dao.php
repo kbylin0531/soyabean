@@ -14,9 +14,9 @@ return [
     'DRIVER_CONFIG_LIST' => [
         [
             'dbname'    => 'soya',//选择的数据库
-            'username'  => 'root',
-            'password'  => '',
-            'host'      => 'localhost',
+            'username'  => 'lin',
+            'password'  => 'ASD123zxc',
+            'host'      => '127.0.0.1',
             'port'      => '3306',
             'charset'   => 'UTF8',
             'dsn'       => null,//默认先检查差DSN是否正确,直接写dsn而不设置其他的参数可以提高效率，也可以避免潜在的bug

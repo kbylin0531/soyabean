@@ -7,15 +7,45 @@
  */
 
 namespace Application\Home\Controller;
+use Application\System\Common\Library\HomeController;
+use Soya\Extend\Verify;
 
 /**
  * Class UserController 用户控制器
  * @package Application\Home\Controller
  */
-class UserController extends IndexController {
+class UserController extends HomeController {
 
     public function login(){
-        echo 'this is login page!';
+        $this->show();
+    }
+
+    public function register(){
+        $this->show();
+    }
+
+    /**
+     * 修改密码
+     */
+    public function profile(){
+        $this->show();
+    }
+
+    /**
+     * 微信绑定登录
+     */
+    public function bindLogin(){
+        $this->show();
+    }
+    /**
+     * XXX
+     */
+    public function simpleLogin(){
+        $this->show();
+    }
+
+    public function verify(){
+        Verify::getInstance()->entry();
     }
 
 }

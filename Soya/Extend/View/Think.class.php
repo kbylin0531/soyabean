@@ -100,6 +100,28 @@ class Think implements ViewInterface{
         }
     }
 
+    protected $_replacement = [
+        '__PUBLIC__'    =>  __PUBLIC__,     // Public目录访问地址
+    ];
+
+    /**
+     * 设置模板替换字符串
+     * @param string $str
+     * @param string $replacement
+     * @return void
+     */
+    public function registerParsingString($str,$replacement){
+        $this->_replacement[$str] = $replacement;
+    }
+
+    /**
+     * 获取所有替换字符串
+     * @return array
+     */
+    public function getParsingString(){
+        return $this->_replacement;
+    }
+
     /**
      * 显示模板
      * @param string $template 全部模板引擎通用的
@@ -110,6 +132,17 @@ class Think implements ViewInterface{
      */
     public function display($template = null, $cache_id = null, $compile_id = null, $parent = null) {
 //        dumpout($template,is_file($template));
+        //模板常量
+        defined('__ROOT__') or define('__ROOT__',URI::getBasicUrl());
+        defined('__MODULE__') or define('__MODULE__',__PUBLIC__.REQUEST_MODULE);
+        defined('__CONTROLLER__') or define('__CONTROLLER__',__MODULE__.'/'.REQUEST_CONTROLLER);
+        defined('__ACTION__') or define('__ACTION__',__CONTROLLER__.'/'.REQUEST_ACTION);
+
+        $this->_replacement['__ROOT__'] = __ROOT__; // 当前网站地址,带脚本名称
+        $this->_replacement['__MODULE__'] = __MODULE__;
+        $this->_replacement['__CONTROLLER__'] = __CONTROLLER__;
+        $this->_replacement['__ACTION__'] = __ACTION__;// 当前操作地址
+
         $this->fetch($template,$this->_tVars);
     }
 
@@ -251,23 +284,11 @@ class Think implements ViewInterface{
      * @return void
      */
     private function replaceTemplateString(&$tmplContent){
-        //模板常量
-        defined('__ROOT__') or define('__ROOT__',URI::getBasicUrl());
-        defined('__MODULE__') or define('__MODULE__',__PUBLIC__.'/'.REQUEST_MODULE);
-        defined('__CONTROLLER__') or define('__CONTROLLER__',__MODULE__.'/'.REQUEST_CONTROLLER);
-        defined('__ACTION__') or define('__ACTION__',__CONTROLLER__.'/'.REQUEST_ACTION);
-        $replace =  array(
-            '__PUBLIC__'    =>  __PUBLIC__,
-            '__ROOT__'      =>  __ROOT__,       // 当前网站地址
-            '__MODULE__'    =>  __MODULE__,
-            '__CONTROLLER__'=>  __CONTROLLER__,
-            '__ACTION__'    =>  __ACTION__,     // 当前操作地址
-        );
         // 允许用户自定义模板的字符串替换
-        if(is_array($this->config['TMPL_PARSE_STRING']) )
-            $replace =  array_merge($replace,$this->config['TMPL_PARSE_STRING']);
-        $tmplContent = str_replace(array_keys($replace),array_values($replace),$tmplContent);
+        if(!empty($this->config['TMPL_PARSE_STRING']) ) $this->_replacement =  array_merge($this->_replacement,$this->config['TMPL_PARSE_STRING']);
+        $tmplContent = str_replace(array_keys($this->_replacement),array_values($this->_replacement),$tmplContent);
     }
+
 
     /**
      * 模板解析入口
@@ -799,11 +820,10 @@ class Think implements ViewInterface{
      * @param array $tag 标签属性
      * @param string $content  标签内容
      * @return string
-     *
+     */
     public function _php($tag,$content) {
-    $parseStr = '<?php '.$content.' ?>';
-    return $parseStr;
-    }*/
+        return '<?php '.$content.' ?>';
+    }
 
     /**
      * TagLib标签属性分析 返回标签属性数组

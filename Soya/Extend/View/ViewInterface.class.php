@@ -31,6 +31,19 @@ interface ViewInterface {
     public function assign($tpl_var,$value=null,$nocache=false);
 
     /**
+     * 获取所有替换字符串
+     * @return array
+     */
+    public function getParsingString();
+
+    /**
+     * 设置模板替换字符串
+     * @param string $str
+     * @param string $replacement
+     * @return void
+     */
+    public function registerParsingString($str,$replacement);
+    /**
      * 显示模板
      * @param string $template 全部模板引擎通用的
      * @param null $cache_id
