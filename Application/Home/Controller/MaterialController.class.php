@@ -7,246 +7,94 @@
  */
 
 namespace Application\Home\Controller;
-
 use Application\System\Common\Library\HomeController;
+use Soya\Core\URI;
+use Soya\Extend\Page;
 
 /**
  * Class MaterialController 素材管理
  * @package Application\Home\Controller
  */
-class MaterialController extends HomeController
-{
-    public function lists()
-    {
-        $this->show('material_lists');
+class MaterialController extends HomeController {
+
+    private function getNav() {
+        $nav = [];
+        $act = strtolower ( REQUEST_ACTION );
+//        $param = array('mdm'=>I('mdm'));
+        $res ['title'] = '图文素材';
+        $res ['url'] =  URI::url( 'materialLists' );
+        $res ['class'] = $act == 'materialLists' ? 'current' : '';
+        $nav [] = $res;
+
+        $res ['title'] = '图片素材';
+        $res ['url'] = URI::url ( 'picture_lists' );
+        $res ['class'] = strpos ( $act, 'picture' ) !== false ? 'current' : '';
+        $nav [] = $res;
+
+        $res ['title'] = '语音素材';
+        $res ['url'] = URI::url ( 'voice_lists' );
+        $res ['class'] = strpos ( $act, 'voice' ) !== false ? 'current' : '';
+        $nav [] = $res;
+
+        $res ['title'] = '视频素材';
+        $res ['url'] = URI::url ( 'video_lists' );
+        $res ['class'] = strpos ( $act, 'video' ) !== false ? 'current' : '';
+        $nav [] = $res;
+
+        $res ['title'] = '文本素材';
+        $res ['url'] = URI::url ( 'text_lists' );
+        $res ['class'] = strpos ( $act, 'text' ) !== false ? 'current' : '';
+        $nav [] = $res;
+
+        return $nav;
     }
 
-    public function doAdd()
-    {
-    }
-
-    function material_lists()
-    {
+    public function add(){
         $this->show();
     }
 
-    function add_material()
-    {
-        $this->display();
+    public function addMaterial(){
+        $this->show();
     }
 
-    function del_material_by_id()
-    {
+    public function materialData(){
+        $this->show();
     }
 
-    function del_material_by_groupid()
-    {
+    public function materialLists(){
+        $this->show();
     }
 
-    function material_data()
-    {
-        $this->display();
+    public function newsDetail(){
+        $this->show();
     }
 
-    function get_news_by_group_id()
-    {
+    public function pictureData(){
+        $this->show();
     }
 
-    // 与微信同步
-    function syc_news_to_wechat()
-    {
+    public function pictureLists(){
+        $this->show();
     }
 
-    // 获取图文素材url
-    function _news_url()
-    {
+    public function textListsData(){
+        $this->show();
     }
 
-    function syc_news_from_wechat()
-    {
+    public function videoData(){
+        $this->show();
     }
 
-    function _thumb_media_id()
-    {
+    public function videoLists(){
+        $this->show();
     }
 
-    function _image_media_id($cover_id)
-    {
+    public function voiceData(){
+        $this->show();
     }
 
-    function _download_imgage($media_id, $picUrl = '', $dd = NULL)
-    {
-    }
-
-    function news_detail()
-    {
-        $this->display();
-    }
-
-    /**
-     * ********************************图片素材*************************************************
-     */
-    function picture_lists()
-    {
-        $this->display();
-    }
-
-    function add_picture()
-    {
-    }
-
-    function del_picture()
-    {
-    }
-
-    function picture_data()
-    {
-        $this->display();
-    }
-
-    // 根据id获取图片素材,设置欢迎语用到
-    function ajax_picture_by_id()
-    {
-    }
-
-    // 上传图片素材
-    function syc_image_to_wechat()
-    {
-    }
-
-    // 下载图片
-    function syc_image_from_wechat()
-    {
-    }
-
-    /**
-     * ********************************音频素材*************************************************
-     */
-
-    function do_down_file()
-    {
-    }
-
-    // 根据id获取图片素材,设置欢迎语用到
-    function ajax_voice_by_id()
-    {
-    }
-
-    function voice_lists()
-    {
-        $this->display();
-    }
-
-    function voice_data()
-    {
-        $this->display();
-    }
-
-    function voice_add()
-    {
-        $this->display('add');
-    }
-
-    function voice_del()
-    {
-    }
-
-    function voice_edit()
-    {
-        $this->display('Addons:edit');
-    }
-
-    // 下载音频
-    function _voice_download($media_id, $cover_url)
-    {
-    }
-
-    function syc_voice_to_wechat()
-    {
-    }
-
-    /**
-     * ********************************视频素材*************************************************
-     */
-    function video_lists()
-    {
-        $this->display();
-    }
-
-    // 根据id获取图片素材,设置欢迎语用到
-    function ajax_video_by_id()
-    {
-    }
-
-    function video_data()
-    {
-        $this->display();
-    }
-
-    function video_add()
-    {
-        $this->display('Addons:add');
-    }
-
-    function video_del()
-    {
-    }
-
-    function syc_video_to_wechat()
-    {
-    }
-
-// 下载音频：未实现
-    function _video_download($media_id, $cover_url)
-    {
-    }
-
-    /**
-     * *******************多媒体共用***********************
-     */
-    function syc_file_from_wechat()
-    {
-    }
-
-// 上传视频、语音素材
-    function _get_file_media_id($file_id, $type = 'voice', $title = '', $introduction = '')
-    {
-    }
-
-    /**
-     * ********************************文本素材*************************************************
-     */
-    function text_lists()
-    {
-//        $this->display ( 'text_lists_data' );
-        $this->display('Addons:lists');
-    }
-
-// 根据id获取文本素材,设置欢迎语用到
-    function ajax_text_by_id()
-    {
-    }
-
-    function text_add()
-    {
-        $this->display('Addons:add');
-    }
-
-    function text_del()
-    {
-    }
-
-    function text_edit()
-    {
-        $this->display('Addons:edit');
-    }
-
-    function get_content_by_id()
-    {
-    }
-
-    function check_file_size($fileId, $limSize, $strExt = 'mp3,wma,wav,amr', $checkExt = 1)
-    {
+    public function voiceLists(){
+        $this->show();
     }
 
 

@@ -881,7 +881,7 @@ window.soya = (function(){
          * 新建一个DOM元素
          * @param expression 元素表达式
          */
-        newElement:function (expression) {
+        newElement:function (expression,inner) {
             var tagname  = expression, classes, id;
             if(expression.indexOf('.') > 0 ){
                 classes = expression.split(".");
@@ -904,6 +904,8 @@ window.soya = (function(){
                 }
                 element.setAttribute('class',ct);
             }
+            if(inner) element.innerHTML = inner;
+            return element;
         },
         //获取一个单例的操作对象作为上下文环境的深度拷贝
         newInstance:function (context) {

@@ -1,12 +1,9 @@
-<include file="Public/head"/>
+<include file="/Home/View/Base/Public/head"/>
 <body style="background:#fff">
 <div class="lists_data">
   <div class="span9 page_message">
     <section id="contents">
-<if condition="empty($list_data) && empty($_GET['content']) ">
-		<div class="empty_container"><p>您的文本素材库为空，<a target='_blank' href="{ ('Home/Material/text_lists')}">请先增加素材</a></p></div>
-
-<else />
+		<div class="empty_container"><p>您的文本素材库为空，<a target='_blank' href="__ROOT__/Home/Material/text_lists">请先增加素材</a></p></div>
 
       <div class="table-bar">
         <div class="search-form fl">
@@ -14,7 +11,7 @@
         <!-- 高级搜索 -->
         <div class="search-form fr cf">
           <input type="text" placeholder="请输入文本内容搜索" value="{ ('content')}" class="search-input" name="content">
-            <a url="{ ('Material/text_lists',$get_param)}" id="search" href="javascript:;" class="sch-btn"><i class="btn-search"></i></a> </div>
+            <a data-url="" id="search" href="javascript:;" class="sch-btn"><i class="btn-search"></i></a> </div>
         </div>
         <!-- 多维过滤 -->
       </div>
@@ -26,10 +23,8 @@
             <thead>
               <tr>
                 <th class="row-selected row-selected">
-                  <if condition="!isRadio">
                   <input type="checkbox" class="check-all regular-checkbox" id="checkAll">
                   <label for="checkAll"></label></th>
-                  </if>
                 <th>编号</th>
                 <th width='85%'>素材文本内容</th>
               </tr>
@@ -37,21 +32,15 @@
 
             <!-- 列表 -->
             <tbody>
-              <volist name="list_data" id="vo">
                 <tr>
                   <td>
-                   <empty name="isRadio">
-                  		<input type="checkbox" id="check_{ vo.id}" name="ids[]" value="{ vo.id}" class="ids regular-checkbox">
-                    	<label for="check_{ vo.id}"></label>
-                    <else/>
-                    	<input type="radio" id="check_{ vo.id}" name="ids[]" value="{ vo.id}" class="ids regular-radio">
-                    	<label for="check_{ vo.id}"></label>
-                    </empty>
+                    <input type="checkbox" name="ids[]" value="{ vo.id}" class="ids regular-checkbox">
+                    <label></label>
+                    <input type="radio" name="ids[]" value="{ vo.id}" class="ids regular-radio">
                   </td>
                   <td type="headimgurl">{ vo.id}</td>
                   <td type="content">{ vo.content}</td>
                 </tr>
-              </volist>
             </tbody>
           </table>
         </div>

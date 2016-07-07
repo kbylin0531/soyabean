@@ -182,8 +182,9 @@ class URI extends \Soya{
         //-- 解析参数部分 --//
         $this->result['p'] = SEK::toParametersArray($pparts,$bridges['pp'],$bridges['pkv']);
         //URL中解析结果合并到$_GET中，$_GET的其他参数不能和之前的一样，否则会被解析结果覆盖
-        SEK::merge($_GET,$this->result['p']);
+        $_GET = array_merge($_GET,$this->result['p']);
 
+//        \Soya\dump($this->result['p'],$_GET);
 //        self::trace($uri,$this->result);
         //注意到$_GET和$_REQUEST并不同步，当动态添加元素到$_GET中后，$_REQUEST中不会自动添加
         \Soya::recordStatus('parseurl_in_common_end');
@@ -308,6 +309,11 @@ class URI extends \Soya{
      * @return string 可以访问的URI
      */
     public function create($modules=null,$contler=null,$action=null,array $params=null){
+
+        $modules or $modules = REQUEST_MODULE;
+        $contler or $contler = REQUEST_CONTROLLER;
+        $action or $action = REQUEST_ACTION;
+
         $config = self::getConfig();
         if($config['API_MODE_ON']){
             $uri = self::getBasicUrl().$this->createInAPI($modules,$contler,$action,$params);

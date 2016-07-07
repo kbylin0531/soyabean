@@ -4,7 +4,7 @@
   <!-- 标签页导航 -->
   <div class="span9 page_message">
     <section id="contents">
-      <include file="Addons/_nav" />
+      <include file="/Home/View/Addons/_nav.html" />
       <div class="tab-content"> 
         <!-- 表单 -->
         <php>$post_url || $post_url = U('edit?model='.$model['id'], $get_param);</php>
@@ -252,13 +252,13 @@
   </div>
 </block>
 <block name="script">
-  <link href="__STATIC__/datetimepicker/css/datetimepicker.css?v={SITE_VERSION}" rel="stylesheet" type="text/css">
+  <link href="__STATIC__/datetimepicker/css/datetimepicker.css" rel="stylesheet" type="text/css">
   <php>if(C('COLOR_STYLE')=='blue_color') echo '
-    <link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css?v={SITE_VERSION}" rel="stylesheet" type="text/css">
+    <link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css" rel="stylesheet" type="text/css">
     ';</php>
-  <link href="__STATIC__/datetimepicker/css/dropdown.css?v={SITE_VERSION}" rel="stylesheet" type="text/css">
+  <link href="__STATIC__/datetimepicker/css/dropdown.css" rel="stylesheet" type="text/css">
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js?v={SITE_VERSION}" charset="UTF-8"></script> 
+  <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script> 
   <script type="text/javascript">
   $(function(){
 	var UploadFileExts = "{ UploadFileExts}";

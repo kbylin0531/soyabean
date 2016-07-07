@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <include file="/Home/View/Base/Public/head"/>
+    <style>
+        .material_list {
+            margin: 0;
+        }
+
+        .appmsg_item .main_img {
+            margin: 0;
+        }
+    </style>
+</head>
+<body style="background: #fff;">
+    <div class="empty_container"><p>您的图文素材库为空，<a href="#">请先增加素材</a></p></div>
+    <div class="data_container">
+        <ul class="material_list">
+            <li class="appmsg_li" data-id="{ vo.id}" data-group_id="{ vo.group_id}" style="overflow:hidden">
+                <div class="appmsg_item">
+                    <h6 class="ellipsis"">{ vo.title}</h6>
+                    <p class="title">{ vo.cTime|time_format}</p>
+                    <div class="main_img">
+                        <img src=""/>
+                    </div>
+                    <p class="desc">{ vo.intro}</p>
+                </div>
+                <div class="hover_area"></div>
+            </li>
+
+            <li class="appmsg_li" data-id="{ vo.id}" data-group_id="{ vo.group_id}" style="overflow:hidden">
+                <div class="appmsg_item">
+                    <p class="title">{ vo.cTime|time_format}</p>
+                    <div class="main_img">
+                        <img src=""/>
+                        <h6>{ vo.title}</h6>
+                    </div>
+                    <p class="desc">{ vo.intro}</p>
+                </div>
+                    <div class="appmsg_sub_item">
+                        <p class="title">{ vv.title}</p>
+                        <div class="main_img">
+                            <img src=""/>
+                        </div>
+                    </div>
+                <div class="hover_area"></div>
+            </li>
+        </ul>
+        <div class="page"> page</div>
+    </div>
+</body>
+</html>

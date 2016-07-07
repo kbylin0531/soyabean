@@ -1,14 +1,13 @@
 <extend file="/Home/View/Base/common.html"/>
 <block name="body">
   <div class="span9 page_message">
-  <section id="contents"> <include file="Addons/_nav" />
+  <section id="contents"> <include file="/Home/View/Addons/_nav.html" />
     <div class="tab-content"> 
       <h3>新建图文消息</h3>
       <!-- 表单 -->
-      <div id="form" action="{ post_url}" class="form-horizontal form-center">
+      <div id="form" action="" class="form-horizontal form-center">
         <div class="material_form">
        		<div class="preview_area">
-            <if condition="empty($main)">
             	<form data-index='0' class="appmsg_item edit_item editing">
                     <p class="time">时间</p>
                     <div class="main_img">
@@ -24,11 +23,11 @@
                     <textarea style="display:none" name="content"></textarea>
                     <div class="hover_area"><a href="javascript:;" onClick="editItem(this)">编辑</a></div>
                 </form>
-                <else />
+
                   <form data-index='0' class="appmsg_item edit_item editing">
                     <p class="time">{ main.cTime|time_format}</p>
                     <div class="main_img">
-                        <img src="{ main.cover_id|get_cover_url}" data-coverid="{ main.cover_id|intval}"/>
+                        <img src="" data-coverid="{ main.cover_id|intval}"/>
                         <h6 class="title">{ main.title}</h6>
                     </div>
                     <p class="intro">{ main.intro}</p>
@@ -41,7 +40,6 @@
                     <textarea style="display:none" name="content">{ main.content}</textarea>
                     <div class="hover_area"><a href="javascript:;" onClick="editItem(this)">编辑</a></div>
                 </form>
-                <volist name="others" id="vo">
                 <form data-index='{ key}' class="appmsg_sub_item edit_item">
                     <p class="title">{ vo.title}</p>
                     <div class="main_img">
@@ -56,8 +54,6 @@
                     <textarea style="display:none" name="content">{ vo.content}</textarea>
                     <div class="hover_area"><a href="javascript:;" onClick="editItem(this)">编辑</a><a href="javascript:;" onClick="deleteItem(this)">删除</a></div>
                 </form>
-                </volist>
-                </if>
                 <div class="appmsg_edit_action">
                     <a href="javascript:;" onClick="addMsg();">添加</a>
                 </div>
@@ -102,7 +98,6 @@
                                 <div class="controls">
                                   <label class="textarea">
                                   <textarea style="width:405px; height:200px;" name="p_content" ></textarea>
-                                  {hook('adminArticleEdit', array('name'=>'p_content','value'=>''))} </label>
                                   </label>
                                 </div>
                            </li>   
@@ -117,7 +112,7 @@
             </div>
         </div>
         <div class="form-item form_bh">
-          <button class="btn submit-btn ajax-post" id="submit" type="button">{ submit_name|default='确 定'}</button>
+          <button class="btn submit-btn ajax-post" id="submit" type="button">确定</button>
         </div>
       </div>
     </div>
@@ -131,12 +126,10 @@
 $('#submit').click(function(){
     var postUrl = $('#form').attr('action');
 	var dataJson = [];
-	$('.edit_item').each(function(index, element) {
+	$('.edit_item').each(function() {
         dataJson.push($(this).serializeArray());
     });
 	$(this).addClass('disabled');
-	//console.log(dataJson);
-	//console.log(JSON.stringify(dataJson));
 	//提交数组字符串 php解析后进行保存
 	$.post(postUrl,{'dataStr':JSON.stringify(dataJson)},function(data){
 		$('#submit').removeClass('disabled');
@@ -148,13 +141,12 @@ $('#submit').click(function(){
 		}else{
 			updateAlert(data.info);
 		}
-	})
+	});
 	return false;
 });
 $(function(){
 	//初始化上传图片插件
 	initUploadImg();
-
     showTab();
 	
 	$('.toggle-data').each(function(){

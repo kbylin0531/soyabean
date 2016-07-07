@@ -2,22 +2,18 @@
 <block name="body">
   <div class="span9 page_message">
   
-    <section id="contents"> <include file="Addons/_nav" />
+    <section id="contents"> <include file="/Home/View/Addons/_nav.html" />
 
       <!-- 数据列表 -->
       <div class="data-table" style="margin-top:20px;">
       
         <div class="table-striped">
         <div style="padding-bottom: 20px;padding-left: 15px;">
-        <a class="btn" href="{ ('voice_add',array('mdm'=>I('mdm')))}">新 增</a>
-        <php>if(C('MATERIAL')) { </php> 
-                <a class="btn" href="{ ('syc_voice_to_wechat',array('mdm'=>$_GET['mdm']))}">一键上传素材到微信素材库</a>
-                <a class="btn" href="{ ('syc_file_from_wechat',array('mdm'=>$_GET['mdm']))}">一键下载微信素材库到本地</a>
-         <php> } </php>
-        </div>     
-        
+        <a class="btn" href="">新 增</a>
+            <a class="btn" href="">一键上传素材到微信素材库</a>
+            <a class="btn" href="">一键下载微信素材库到本地</a>
+        </div>
         	<ul class="picture_list">
-                <volist name="list_data" id="vo">
             	<li>
                 	<div class="picture_item">
                         <div class="sound_item" onClick="playSound('sound_{ vo.id}',this);">
@@ -28,16 +24,13 @@
                             <audio id="sound_{ vo.id}" src="{ vo.file_id|get_file_url}"></audio>
                         </div>
                         <div class="picture_action item_three_action">
-                            <a href="{ vo.file_info.path}">下载</a>
-                             <a href="{ ('voice_edit',array('id'=>$vo[id],'mdm'=>$_GET['mdm']))}">编辑</a>
-                            <a href="javascript:;" onclick="del({ vo.id}, this)">删除</a>	
+                            <a href="">下载</a>
+                             <a href="">编辑</a>
+                            <a href="javascript:;" onclick="">删除</a>
                         </div>
                     </div>
                 </li>
-                </volist>
-            	
             </ul>
-          
         </div>
       </div>
       <div class="page"> { _page|default=''} </div>
@@ -45,10 +38,7 @@
   </div>
 </block>
 <block name="script"> 
-  <script type="text/javascript">
-$(function(){
-	
-})
+<script type="text/javascript">
 function del(id, _this){
 	if(!confirm('确认删除？')) return false;
 
@@ -68,7 +58,6 @@ function playSound(id,obj){
 	}
 	audio.pause();
 	$(obj).find('img').attr('src',IMG_PATH+'/icon_sound.png');
-	
 }
 </script> 
 </block>
