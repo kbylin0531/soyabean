@@ -50,60 +50,10 @@
 </block>
 <block name="script">
 <script type="text/javascript">
-    var material = {
-        /**
-         * data:{
-         *  'item':{
-         *      'title':'',
-         *      'small_title':'',
-         *      'img':'',
-         *      'intro':''
-         *  }
-         *  'subitems':[
-         *      {
-         *          'title':'',
-         *          'img':''
-         *      },...
-         *  ],
-         *  'action':[
-         *      {
-         *          'title':'',
-         *          'href':'',
-         *          'onclick':function(){},
-         *      }
-         *  ]
-         * }
-         * @param data
-         */
-        create:function (data) {
-            var li = soya.newElement('li.appmsg_li');
-            data.hasOwnProperty('item')     && li.appendChild(this.createItem(data['item']));
-            data.hasOwnProperty('subitem')  && data['subitem'].length   && li.append(this.createSubitems(data['subitem']));
-            data.hasOwnProperty('action')   && data['action'].length    && li.append(this.createAction(data['action']));
-            return li;
-        },
-        createItem:function (data) {
-            var div = soya.newElement('div.appmsg_item');
-            data.hasOwnProperty('title') && div.appendChild(soya.newElement('h6.ellipsis',data['title']));
-            data.hasOwnProperty('small_title') && div.appendChild(soya.newElement('p.title',data['small_title']));
 
-            var main_img = soya.newElement('div.main_img');
-            var img = soya.newElement('img');img.setAttribute('src',data.img);
-            var img_title = soya.newElement('h6',data['img_title']);
-            main_img.appendChild(img);
-            main_img.appendChild(img_title);
-            div.appendChild(main_img);
-
-            data.hasOwnProperty('intro') && div.appendChild(soya.newElement('p.desc.ellipsis',data.intro));
-            return div;
-        },
-        createSubitems:function (data) {
-
-        },
-        createAction:function (data) {
-
-        }
-    };
+    var info = soya.utils.toObject('{$info}');
+    console.log(info);
+    soya.template.load(info);
 
     $(function(){
         //搜索功能
@@ -121,7 +71,8 @@
 
         //回车自动提交
         $('.search-form').find('input').keyup(function(event){
-            if(event.keyCode===13){ $("#search").click();
+            if(event.keyCode===13){
+                $("#search").click();
             }
         });
     })

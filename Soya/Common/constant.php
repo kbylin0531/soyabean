@@ -11,6 +11,9 @@ define('IS_WINDOWS',false !== stripos(PHP_OS, 'WIN'));
 define('IS_REQUEST_AJAX', ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) and strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') ));
 define('IS_METHOD_POST',strtoupper($_SERVER['REQUEST_METHOD']) === 'POST');
 define('REQUEST_TIME',$_SERVER['REQUEST_TIME']);
+
+
+define ( 'HTTP_PREFIX', isset ( $_SERVER ['HTTPS'] ) && $_SERVER ['HTTPS'] == 'on' ? 'https://' : 'http://' );
 //---------------------------------- mode constant -------------------------------------//
 defined('DEBUG_MODE_ON') or define('DEBUG_MODE_ON', true);
 defined('PAGE_TRACE_ON') or define('PAGE_TRACE_ON', true);

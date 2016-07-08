@@ -50,7 +50,13 @@
 </block>
 <block name="script"> 
   <script type="text/javascript">
-$(function(){
+
+      var info = soya.utils.toObject('{$info}');
+      console.log(info);
+      soya.template.load(info);
+
+
+      $(function(){
 	//t上传图片
 	initUploadImg({width:210,height:192});
 	$('.uploadify-button').css('background-color','#ddd')

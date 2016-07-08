@@ -51,7 +51,13 @@
   </div>
 
 <script type="text/javascript">
-$(function(){
+
+    var info = soya.utils.toObject('{$info}');
+    console.log(info);
+    soya.template.load(info);
+
+
+    $(function(){
 	//搜索功能
 	$("#search").click(function(){
 		var url = $(this).attr('url');

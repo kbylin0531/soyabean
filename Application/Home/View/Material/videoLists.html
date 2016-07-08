@@ -41,7 +41,13 @@
 </block>
 <block name="script"> 
 <script type="text/javascript">
-function del(id, _this){
+
+    var info = soya.utils.toObject('{$info}');
+    console.log(info);
+    soya.template.load(info);
+
+
+    function del(id, _this){
 	if(!confirm('确认删除？')) return false;
 	$(_this).parent().parent().parent().remove();
 	$.post("",{ d:id});

@@ -19,6 +19,8 @@ class HomeController extends CommonController {
      */
     public function __construct($identify=null){
         define('REQUEST_PATH','/'.REQUEST_MODULE.'/'.REQUEST_CONTROLLER.'/'.REQUEST_ACTION);
+
+
     }
 
     protected function __checkLogin(){

@@ -18,34 +18,39 @@ use Soya\Util\SEK;
  */
 class MaterialController extends HomeController {
 
+    public function test(){
+        echo 'test';
+    }
+
     private function getNav() {
         $nav = [];
         $act = strtolower ( REQUEST_ACTION );
 //        $param = array('mdm'=>I('mdm'));
+//        \Soya\dumpout($act,stripos ( $act, 'material' ) !== false  );
         //& 前面为选择请，后面为属性，如果属性为空，则为innerHTML
         $res ['a&'] = '图文素材';
         $res ['a&href'] =  URI::url( 'materialLists' );
-        $res ['li&class'] = $act == 'materialLists' ? 'current' : '';
+        $res ['li&class'] = stripos ( $act, 'material' ) !== false  ? 'current' : '';
         $nav [] = $res;
 
         $res ['a&text'] = '图片素材';
-        $res ['a&href'] = URI::url ( 'picture_lists' );
-        $res ['li&class'] = strpos ( $act, 'picture' ) !== false ? 'current' : '';
+        $res ['a&href'] = URI::url ( 'pictureLists' );
+        $res ['li&class'] = stripos ( $act, 'picture' ) !== false ? 'current' : '';
         $nav [] = $res;
 
         $res ['a&'] = '语音素材';
-        $res ['a&href'] = URI::url ( 'voice_lists' );
-        $res ['li&class'] = strpos ( $act, 'voice' ) !== false ? 'current' : '';
+        $res ['a&href'] = URI::url ( 'voiceLists' );
+        $res ['li&class'] = stripos ( $act, 'voice' ) !== false ? 'current' : '';
         $nav [] = $res;
 
         $res ['a&'] = '视频素材';
-        $res ['a&href'] = URI::url ( 'video_lists' );
-        $res ['li&class'] = strpos ( $act, 'video' ) !== false ? 'current' : '';
+        $res ['a&href'] = URI::url ( 'videoLists' );
+        $res ['li&class'] = stripos ( $act, 'video' ) !== false ? 'current' : '';
         $nav [] = $res;
 
         $res ['a&'] = '文本素材';
-        $res ['a&href'] = URI::url ( 'text_lists' );
-        $res ['li&class'] = strpos ( $act, 'text' ) !== false ? 'current' : '';
+        $res ['a&href'] = URI::url ( 'textListsData' );
+        $res ['li&class'] = stripos ( $act, 'text' ) !== false ? 'current' : '';
         $nav [] = $res;
         return $nav;
     }
@@ -53,12 +58,30 @@ class MaterialController extends HomeController {
     protected function show($template=null){
         $nav = $this->getNav();
         $this->assign('info',json_encode([
-            '.nav_item'   => $nav,
+            '.nav_item'     => $nav,
+            '.subnav_item'  => [],
+            '.snitem' => [
+                [
+                    'img&src'   => __PUBLIC__.'/assets/app/home/images/ico1.png',
+                    '.sidenav_parent>span'      => '管理',
+                    '.snsubitem'  => [
+                        [
+                            'a&href'    => URI::url ( 'materialLists' ),
+                            'span'      => '素材管理'
+                        ],
+                    ]
+                ],
+            ],
         ]));
 //        \Soya\dumpout($nav);
         null === $template and $template = SEK::backtrace(SEK::ELEMENT_FUNCTION,SEK::PLACE_FORWARD);
         parent::show($template);
     }
+
+    public function materialLists(){
+        $this->show();
+    }
+
 
     public function add(){
         $this->show();
@@ -69,10 +92,6 @@ class MaterialController extends HomeController {
     }
 
     public function materialData(){
-        $this->show();
-    }
-
-    public function materialLists(){
         $this->show();
     }
 

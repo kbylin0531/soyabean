@@ -918,24 +918,9 @@ window.soya = (function(){
         }
     };
 
-    //监听窗口状态变化
-    window.document.onreadystatechange = function(){
-        // console.log(window.document.readyState);
-        if( window.document.readyState === "complete" ){
-            if(readyStack.length){
-                for(var i=0;i<readyStack.length;i++) {
-                    // console.log(callback)
-                    (readyStack[i])();
-                }
-            }
-        }
-    };
-
-
     /**
      * 设计目标：
      * ① 按照类选择加载的对象
-     * @type {{target: null, load: template.load, c: template.c, getIndividual: template.getIndividual, loadList: template.loadList, loadValue: template.loadValue}}
      */
     var template = {
         /**
@@ -944,34 +929,37 @@ window.soya = (function(){
          */
         load:function (data) {
             if(!utils.isObject(data)) throw "template.load(object)!!";
+            console.log(data);
             utils.each(data,function (perdata, selector) {
+                // console.log(perdata,selector); return ;
                 selector = document.querySelector(selector);
-                var parent = selector.parentNode;
                 if(selector){
                     var clone = selector.cloneNode(true);
-
+                    var parent = selector.parentNode;
                     var result = template.dispatch(perdata,clone);
+
+                    parent.removeChild(selector);//remove self
                     if(utils.isArray(result)) {
+                        // console.log(result);
                         utils.each(result, function (item) {
                             parent.appendChild(item);
                         });
                     }
-                    // console.log(clone,perdata);//元素和元素的数据
-                    // parent.appendChild(template.dispatch(perdata,clone));
-                    selector.style.display = 'none';
-                    // console.log(clone);
                 }
             });
         },
         dispatch:function (data, ele) {
             // return console.log(data,ele);
+            var result = undefined;
             if(utils.isArray(data)){
-                return template.cloneList(ele,data);
+                result = template.cloneList(ele,data);
             }else if(utils.isObject(data)){
-                return template.getIndividual(ele,data);
+                result = template.getIndividual(ele,data);
+                console.log(result);
             }else{
-                return template.parse(ele,data);
+                result = template.parse(ele,data);
             }
+            return result;
         },
         getIndividual:function (element,data) {
             var ele = clone = undefined;
@@ -994,11 +982,14 @@ window.soya = (function(){
             var list = [];
             soya.utils.each(datas,function (data) {
                 clone = element.cloneNode(true);
+                // console.log(clone,data);
                 clone = template.parse(clone,data);
-                env && env.appendChild(clone);
+                if(env){
+                    env.appendChild(clone);
+                }
                 list.push(clone);
             });
-            element.style.display = 'none';
+            env && element.parentNode.removeChild(element);
             return list;
         },
         /**
@@ -1008,24 +999,48 @@ window.soya = (function(){
          * @returns {*} 将解析完毕的元素原样返回
          */
         parse:function (ele,data) {
-            var e;
+            // console.log(ele,data);
+            var e , p;
             soya.utils.each(data,function (value, key) {
-                var arr = key.split('&');
-                e = ele.querySelector(arr[0]);
-                if(2 == arr.length){
-                    if(e){
+                if(utils.isArray(value)){
+                    e = ele.querySelector(key);
+                    p = e.parentNode;
+                    // p.removeChild(e);
+                    template.cloneList(e,value,p);
+                }else if(utils.isObject(value)){
+                    //
+                }else{
+                    var arr = key.split('&');
+                    e = ele.querySelector(arr[0]);
+                    // console.log(e,ele,arr[0]);
+                    e || (e = ele);//找不到时以自身作为设置
+
+                    if(2 == arr.length){
                         if(arr[1]){
                             e.setAttribute(arr[1],value);
                         }else{
                             e.innerHTML = value;
                         }
+                    }else{
+                        //未设置分隔符号时直接设置innerHTML
+                        e.innerHTML = value;
                     }
-                }else{
-                    //未设置分隔符号时直接设置innerHTML
-                    e.innerHTML = value;
                 }
             });
             return ele;
+        }
+    };
+
+    //监听窗口状态变化
+    window.document.onreadystatechange = function(){
+        // console.log(window.document.readyState);
+        if( window.document.readyState === "complete" ){
+            if(readyStack.length){
+                for(var i=0;i<readyStack.length;i++) {
+                    // console.log(callback)
+                    (readyStack[i])();
+                }
+            }
         }
     };
 

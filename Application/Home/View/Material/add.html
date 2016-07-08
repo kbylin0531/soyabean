@@ -38,24 +38,24 @@
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
   <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script> 
   <script type="text/javascript">
-$('#submit').click(function(){
-    $('#form').submit();
-});
 
-var info = soya.utils.toObject('{$info}');
-console.log(info);
-soya.template.load(info);
+    var info = soya.utils.toObject('{$info}');
+    console.log(info);
+    soya.template.load(info);
 
-$(function(){
-	initUploadFile(function(data){
-		var old_title = $('#title').val();
-		if(old_title==''){
-			var data = $.parseJSON(data);
-			var title = data.name.replace('.'+data.ext, '');
-			$('#title').val(title);		
-		}
-	});
-    showTab();
-});
-</script> 
+    soya.ready(function () {
+
+      $('#submit').click(function(){ $('#form').submit();});
+      initUploadFile(function(data){
+        var old_title = $('#title').val();
+        if(old_title==''){
+          var data = $.parseJSON(data);
+          var title = data.name.replace('.'+data.ext, '');
+          $('#title').val(title);
+        }
+      });
+      showTab();
+    });
+
+</script>
 </block>
