@@ -13,7 +13,21 @@ namespace Soya\Core;
  * TODO:只管分配，不管创建
  * @package Soya\Core
  */
-class Router {
+class Router extends \Soya{
+
+    public function parse(){
+        $result = null;
+        $pathinfo = $_SERVER['PATH_INFO'];
+        if($pathinfo === '/wechat'){
+            $result = [
+                'm' => 'Wechat',
+                'c' => 'Index',
+                'a' => 'index',
+                'p' => [],
+            ];
+        }
+        return $result;
+    }
 
     /**
      * @param $uri

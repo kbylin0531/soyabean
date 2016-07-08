@@ -12,6 +12,7 @@ use Soya\Exception\FileNotFoundException;
 use Soya\Exception\ParameterInvalidException;
 use Soya\Extend\Response;
 use Soya\Util\SEK;
+use Soya\Core\Router;
 
 require_once __DIR__.'/Common/constant.php';
 require_once __DIR__.'/Common/function.php';
@@ -148,7 +149,10 @@ class Soya {
      * @return array
      */
     final public static function parseUri(){
-        $result = URI::getInstance(SINGLE_INSTANCE)->parse();
+        $result = Router::getInstance(SINGLE_INSTANCE)->parse();
+        if(!$result){
+            $result = URI::getInstance(SINGLE_INSTANCE)->parse();
+        }
         return $result;
     }
 

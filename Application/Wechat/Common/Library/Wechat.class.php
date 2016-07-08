@@ -5,7 +5,7 @@
  * Date: 7/8/16
  * Time: 9:35 PM
  */
-namespace Wechat\Common\Library;
+namespace Application\Wechat\Common\Library;
 
 /**
  * Class Wechat
@@ -44,7 +44,10 @@ class Wechat {
      * 响应消息
      */
     public function responseMsg() {
-        $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
+//        echo '<pre>';
+//        var_dump(file_get_contents('php://input'));
+//        exit();
+        $postStr = file_get_contents('php://input');//$GLOBALS["HTTP_RAW_POST_DATA"];
         if (!empty($postStr)) {
             $this->logger("R \r\n" . $postStr);
             $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
