@@ -24,7 +24,7 @@ class Think implements ViewInterface{
      * 上下文环境
      * @var array
      */
-    protected $_context = null;
+    protected $_context = null; 
 
     /**
      * 模板变量
@@ -747,7 +747,6 @@ class Think implements ViewInterface{
             if(false === strpos($templateName,$this->config['TEMPLATE_SUFFIX'])) {
                 // 解析规则为 模块@主题/控制器/操作 $templateName   =   T($templateName);
                 //现在解析规则改为 PATH_BASE.'Application'.'#相对于Application目录的位置#';
-//                $templateName = Controller::parseTemplateLocation($templateName);
                 $templateName .= $this->config['TEMPLATE_SUFFIX'];
             }
             $templateName = PATH_BASE.'Application'.$templateName;

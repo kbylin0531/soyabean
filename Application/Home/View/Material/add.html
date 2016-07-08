@@ -42,6 +42,10 @@ $('#submit').click(function(){
     $('#form').submit();
 });
 
+var info = soya.utils.toObject('{$info}');
+console.log(info);
+soya.template.load(info);
+
 $(function(){
 	initUploadFile(function(data){
 		var old_title = $('#title').val();

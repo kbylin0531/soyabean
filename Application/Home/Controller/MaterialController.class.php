@@ -10,6 +10,7 @@ namespace Application\Home\Controller;
 use Application\System\Common\Library\HomeController;
 use Soya\Core\URI;
 use Soya\Extend\Page;
+use Soya\Util\SEK;
 
 /**
  * Class MaterialController 素材管理
@@ -21,32 +22,42 @@ class MaterialController extends HomeController {
         $nav = [];
         $act = strtolower ( REQUEST_ACTION );
 //        $param = array('mdm'=>I('mdm'));
-        $res ['title'] = '图文素材';
-        $res ['url'] =  URI::url( 'materialLists' );
-        $res ['class'] = $act == 'materialLists' ? 'current' : '';
+        //& 前面为选择请，后面为属性，如果属性为空，则为innerHTML
+        $res ['a&'] = '图文素材';
+        $res ['a&href'] =  URI::url( 'materialLists' );
+        $res ['li&class'] = $act == 'materialLists' ? 'current' : '';
         $nav [] = $res;
 
-        $res ['title'] = '图片素材';
-        $res ['url'] = URI::url ( 'picture_lists' );
-        $res ['class'] = strpos ( $act, 'picture' ) !== false ? 'current' : '';
+        $res ['a&text'] = '图片素材';
+        $res ['a&href'] = URI::url ( 'picture_lists' );
+        $res ['li&class'] = strpos ( $act, 'picture' ) !== false ? 'current' : '';
         $nav [] = $res;
 
-        $res ['title'] = '语音素材';
-        $res ['url'] = URI::url ( 'voice_lists' );
-        $res ['class'] = strpos ( $act, 'voice' ) !== false ? 'current' : '';
+        $res ['a&'] = '语音素材';
+        $res ['a&href'] = URI::url ( 'voice_lists' );
+        $res ['li&class'] = strpos ( $act, 'voice' ) !== false ? 'current' : '';
         $nav [] = $res;
 
-        $res ['title'] = '视频素材';
-        $res ['url'] = URI::url ( 'video_lists' );
-        $res ['class'] = strpos ( $act, 'video' ) !== false ? 'current' : '';
+        $res ['a&'] = '视频素材';
+        $res ['a&href'] = URI::url ( 'video_lists' );
+        $res ['li&class'] = strpos ( $act, 'video' ) !== false ? 'current' : '';
         $nav [] = $res;
 
-        $res ['title'] = '文本素材';
-        $res ['url'] = URI::url ( 'text_lists' );
-        $res ['class'] = strpos ( $act, 'text' ) !== false ? 'current' : '';
+        $res ['a&'] = '文本素材';
+        $res ['a&href'] = URI::url ( 'text_lists' );
+        $res ['li&class'] = strpos ( $act, 'text' ) !== false ? 'current' : '';
         $nav [] = $res;
-
         return $nav;
+    }
+
+    protected function show($template=null){
+        $nav = $this->getNav();
+        $this->assign('info',json_encode([
+            '.nav_item'   => $nav,
+        ]));
+//        \Soya\dumpout($nav);
+        null === $template and $template = SEK::backtrace(SEK::ELEMENT_FUNCTION,SEK::PLACE_FORWARD);
+        parent::show($template);
     }
 
     public function add(){

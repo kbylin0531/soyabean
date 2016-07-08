@@ -6,6 +6,7 @@
  * Time: 16:54
  */
 namespace Soya;
+
 function _var_dump($params,$traces){
     $color='#';$str='9ABCDEF';//随机浅色背景
     for($i=0;$i<6;$i++) $color=$color.$str[rand(0,strlen($str)-1)];

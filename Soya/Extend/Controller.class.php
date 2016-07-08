@@ -91,22 +91,28 @@ class Controller extends \Soya{
      * 例如：
      *  $this->display('index2');
      *  将自动找到该控制器对应的模板目录下的对应模板
-     * 使用final的作用是避免被集成类复写,从而避免SEK::getCallPlace(SEK::CALL_ELEMENT_FUNCTION,2)出现的不稳定
+     * 注意：覆盖的方法必须要保证传递的参数一不为null
      * @param string $template   当前控制器下的模板文件名称，可以不含模板后缀名
      * @param mixed  $cache_id   cache id to be used with this template（参照Smarty）
      * @param mixed  $compile_id compile id to be used with this template（参照Smarty）
      * @param object $parent     next higher level of Smarty variables（参照Smarty）
      * @return void
      */
-    final protected function display($template = null, $cache_id = null, $compile_id = null, $parent = null){
+    protected function display($template = null, $cache_id = null, $compile_id = null, $parent = null){
         null === self::$_context and self::fetchContext();
         //未设置时使用调用display的函数名称
         if(null === $template){//如果未设置参数一,获取当前调用方法的名称作为模板的默认名称
-            self::$_context['a'] = SEK::getCallPlace(SEK::CALL_ELEMENT_FUNCTION,SEK::CALL_PLACE_FORWARD)[SEK::CALL_ELEMENT_FUNCTION];
+            self::$_context['a'] = SEK::backtrace(SEK::ELEMENT_FUNCTION,SEK::PLACE_FORWARD);
             $context = self::$_context;
         }else{
-            $context = $this->parseTemplateLocation($template);
+            $context = SEK::parseLocation($template);
+//            \Soya\dump($context,self::$_context);
+            $context['t'] or empty(self::$_context['t']) or $context['t'] = self::$_context['t'];
+            $context['m'] or empty(self::$_context['m']) or $context['m'] = self::$_context['m'];
+            $context['c'] or empty(self::$_context['c']) or $context['c'] = self::$_context['c'];
+            $context['a'] or empty(self::$_context['a']) or $context['a'] = self::$_context['a'];
         }
+//        \Soya\dumpout($context);
         $view = View::getInstance();
         //模板变量导入
         $view->assign($this->_tVars);
@@ -116,54 +122,6 @@ class Controller extends \Soya{
 //        \Soya\dumpout($context);
         $view->display($context,$cache_id,$compile_id,$parent);
         \Soya::recordStatus('display_end');
-    }
-
-    /**
-     * 解析模板位置
-     * 测试代码：
-    $this->parseTemplateLocation('ModuleA/ModuleB@ControllerName/ActionName:themeName'),
-    $this->parseTemplateLocation('ModuleA/ModuleB@ControllerName/ActionName'),
-    $this->parseTemplateLocation('ControllerName/ActionName:themeName'),
-    $this->parseTemplateLocation('ControllerName/ActionName'),
-    $this->parseTemplateLocation('ActionName'),
-    $this->parseTemplateLocation('ActionName:themeName')
-     * @param string $location 模板位置
-     * @return array
-     */
-    public static function parseTemplateLocation($location){
-        //获取相对于调用控制器的目录，需要获取上下文环境
-        null === self::$_context and self::fetchContext();
-        //资源解析结果：元素一表示解析结果
-        $result = [];
-
-        //-- 解析字符串成数组 --//
-        $tpos = strpos($location,':');
-        //解析主题
-        if(false !== $tpos){
-            //存在主题
-            $result['t'] = substr($location,$tpos+1);//末尾的pos需要-1-1
-            $location = substr($location,0,$tpos);
-        }
-        //解析模块
-        $mcpos = strpos($location,'@');
-        if(false !== $mcpos){
-            $result['m'] = substr($location,0,$mcpos);
-            $location = substr($location,$mcpos+1);
-        }
-        //解析控制器和方法
-        $capos = strpos($location,'/');
-        if(false !== $capos){
-            $result['c'] = substr($location,0,$capos);
-            $result['a'] = substr($location,$capos+1);
-        }else{
-            $result['a'] = $location;
-        }
-
-        isset(self::$_context['t']) and !isset($result['t']) and $result['t'] = self::$_context['t'];
-        isset(self::$_context['m']) and !isset($result['m']) and $result['m'] = self::$_context['m'];
-        isset(self::$_context['c']) and !isset($result['c']) and $result['c'] = self::$_context['c'];
-        isset(self::$_context['a']) and !isset($result['a']) and $result['a'] = self::$_context['a'];
-        return $result;
     }
 
     /**

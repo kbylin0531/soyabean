@@ -14,23 +14,6 @@ use Soya\Util\Helper\StringHelper;
  * @package Soya\Util
  */
 final class SEK {
-    /**
-     * 调用位置
-     */
-    const CALL_PLACE_BACKWORD           = 0; //表示调用者自身的位置
-    const CALL_PLACE_SELF               = 1;// 表示调用调用者的位置
-    const CALL_PLACE_FORWARD            = 2;
-    const CALL_PLACE_FURTHER_FORWARD    = 3;
-    /**
-     * 信息组成
-     */
-    const CALL_ELEMENT_FUNCTION = 1;
-    const CALL_ELEMENT_FILE     = 2;
-    const CALL_ELEMENT_LINE     = 4;
-    const CALL_ELEMENT_CLASS    = 8;
-    const CALL_ELEMENT_TYPE     = 16;
-    const CALL_ELEMENT_ARGS     = 32;
-    const CALL_ELEMENT_ALL      = 0;
 
     /**
      * 将参数二的配置合并到参数一种，如果存在参数一数组不存在的配置项，跳过其设置
@@ -207,28 +190,97 @@ final class SEK {
         return (IS_WINDOWS ? stripos($path, $scope) : strpos($path, $scope)) === 0;
     }
 
+
+    /**
+     * 调用位置
+     */
+    const PLACE_BACKWORD           = 0; //表示调用者自身的位置
+    const PLACE_SELF               = 1;// 表示调用调用者的位置
+    const PLACE_FORWARD            = 2;
+    const PLACE_FURTHER_FORWARD    = 3;
+    /**
+     * 信息组成
+     */
+    const ELEMENT_FUNCTION = 1;
+    const ELEMENT_FILE     = 2;
+    const ELEMENT_LINE     = 4;
+    const ELEMENT_CLASS    = 8;
+    const ELEMENT_TYPE     = 16;
+    const ELEMENT_ARGS     = 32;
+    const ELEMENT_ALL      = 0;
+
     /**
      * 获取调用者本身的位置
      * @param int $elements 为0是表示获取全部信息
      * @param int $place 位置属性
      * @return array|string
      */
-    public static function getCallPlace($elements=self::CALL_ELEMENT_ALL, $place=self::CALL_PLACE_SELF){
+    public static function backtrace($elements=self::ELEMENT_ALL, $place=self::PLACE_SELF) {
         $trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+//        \Soya\dump($trace);
+        $result = [];
         if($elements){
-            $result = [];
-            $elements & self::CALL_ELEMENT_ARGS     and $result[self::CALL_ELEMENT_ARGS]    = isset($trace[$place]['args'])?$trace[$place]['args']:null;
-            $elements & self::CALL_ELEMENT_CLASS    and $result[self::CALL_ELEMENT_CLASS]   = isset($trace[$place]['class'])?$trace[$place]['class']:null;
-            $elements & self::CALL_ELEMENT_FILE     and $result[self::CALL_ELEMENT_FILE]    = isset($trace[$place]['file'])?$trace[$place]['file']:null;
-            $elements & self::CALL_ELEMENT_FUNCTION and $result[self::CALL_ELEMENT_FUNCTION]= isset($trace[$place]['function'])?$trace[$place]['function']:null;
-            $elements & self::CALL_ELEMENT_LINE     and $result[self::CALL_ELEMENT_LINE]    = isset($trace[$place]['line'])?$trace[$place]['line']:null;
-            $elements & self::CALL_ELEMENT_TYPE     and $result[self::CALL_ELEMENT_TYPE]    = isset($trace[$place]['type'])?$trace[$place]['type']:null;
-            return $result;
+            $elements & self::ELEMENT_ARGS     and $result[self::ELEMENT_ARGS]    = isset($trace[$place]['args'])?$trace[$place]['args']:null;
+            $elements & self::ELEMENT_CLASS    and $result[self::ELEMENT_CLASS]   = isset($trace[$place]['class'])?$trace[$place]['class']:null;
+            $elements & self::ELEMENT_FILE     and $result[self::ELEMENT_FILE]    = isset($trace[$place]['file'])?$trace[$place]['file']:null;
+            $elements & self::ELEMENT_FUNCTION and $result[self::ELEMENT_FUNCTION]= isset($trace[$place]['function'])?$trace[$place]['function']:null;
+            $elements & self::ELEMENT_LINE     and $result[self::ELEMENT_LINE]    = isset($trace[$place]['line'])?$trace[$place]['line']:null;
+            $elements & self::ELEMENT_TYPE     and $result[self::ELEMENT_TYPE]    = isset($trace[$place]['type'])?$trace[$place]['type']:null;
+            1 === count($result) and $result = array_shift($result);//一个结果直接返回
         }else{
-            return $trace[$place];
+            $result = $trace[$place];
         }
+        return $result;
     }
 
+    /**
+     * 解析模板位置
+     * 测试代码：
+    $this->parseTemplateLocation('ModuleA/ModuleB@ControllerName/ActionName:themeName'),
+    $this->parseTemplateLocation('ModuleA/ModuleB@ControllerName/ActionName'),
+    $this->parseTemplateLocation('ControllerName/ActionName:themeName'),
+    $this->parseTemplateLocation('ControllerName/ActionName'),
+    $this->parseTemplateLocation('ActionName'),
+    $this->parseTemplateLocation('ActionName:themeName')
+     * @param string $location 模板位置
+     * @return array
+     */
+    public static function parseLocation($location){
+        //资源解析结果：元素一表示解析结果
+        $result = [];
+
+        //-- 解析字符串成数组 --//
+        $tpos = strpos($location,':');
+        //解析主题
+        if(false !== $tpos){
+            //存在主题
+            $result['t'] = substr($location,$tpos+1);//末尾的pos需要-1-1
+            $location = substr($location,0,$tpos);
+        }
+        //解析模块
+        $mcpos = strpos($location,'@');
+        if(false !== $mcpos){
+            $result['m'] = substr($location,0,$mcpos);
+            $location = substr($location,$mcpos+1);
+        }
+        //解析控制器和方法
+        $capos = strpos($location,'/');
+        if(false !== $capos){
+            $result['c'] = substr($location,0,$capos);
+            $result['a'] = substr($location,$capos+1);
+        }else{
+            $result['a'] = $location;
+        }
+
+        isset($result['t']) or $result['t'] = null;
+        isset($result['m']) or $result['m'] = null;
+        isset($result['c']) or $result['c'] = null;
+        isset($result['a']) or $result['a'] = null;
+
+        \Soya\dump($result);
+
+        return $result;
+    }
 
     /**
      * 去除代码中的空白和注释

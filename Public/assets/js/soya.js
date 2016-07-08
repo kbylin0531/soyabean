@@ -19,6 +19,11 @@
  *  52.64 ms Rendering
  *  2.51 ms Painting
  *
+ *
+ *
+ * 不支持IE8及以下的浏览器
+ *  ① querySelector() 方法仅仅返回匹配指定选择器的第一个元素。如果你需要返回所有的元素，请使用 querySelectorAll() 方法替代。
+ *
  */
 window.soya = (function(){
     //开启严格模式节约时间
@@ -85,6 +90,41 @@ window.soya = (function(){
         hexcase:0,
         //bits per input character. 8 - ASCII; 16 - Unicode};
         chrsz:8
+    };
+
+    var clone = function (obj) {
+        // Handle the 3 simple types, and null or undefined
+        // "number," "string," "boolean," "object," "function," 和 "undefined"
+        //null 本身就是一个空的对象
+        if (!obj || "object" !== typeof obj) return obj;
+        var copy = null;
+        // Handle Date
+        if (obj instanceof Date) {
+            copy = new Date();
+            copy.setTime(obj.getTime());
+            return copy;
+        }
+
+        // Handle Array
+        if (obj instanceof Array) {
+            copy = [];
+            var len = obj.length;
+            for (var i = 0; i < len; ++i) {
+                copy[i] = clone(obj[i]);
+            }
+            return copy;
+        }
+
+        // Handle Object
+        if (obj instanceof Object) {
+            copy = {};
+            for (var attr in obj) {
+                if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+            }
+            return copy;
+        }
+
+        throw new Error("Unable to copy obj! Its type isn't supported.");
     };
 
     /**
@@ -855,6 +895,29 @@ window.soya = (function(){
             return false;
         }
     };
+
+    //http://www.cnblogs.com/rubylouvre/archive/2009/07/24/1529640.html
+    var dom = {
+        //支持多个类名的查找
+        getElementsByClassName:function (className, element) {
+            var children = (element || document).getElementsByTagName('*');
+            var elements = [];
+
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                var classNames = child.className.split(' ');
+                for (var j = 0; j < classNames.length; j++) {
+                    if (classNames[j] == className) {
+                        elements.push(child);
+                        break;
+                    }
+                }
+            }
+
+            return elements;
+        }
+    };
+
     //监听窗口状态变化
     window.document.onreadystatechange = function(){
         // console.log(window.document.readyState);
@@ -868,7 +931,106 @@ window.soya = (function(){
         }
     };
 
+
+    /**
+     * 设计目标：
+     * ① 按照类选择加载的对象
+     * @type {{target: null, load: template.load, c: template.c, getIndividual: template.getIndividual, loadList: template.loadList, loadValue: template.loadValue}}
+     */
+    var template = {
+        /**
+         * 加载对象中的数据
+         * @param data object
+         */
+        load:function (data) {
+            if(!utils.isObject(data)) throw "template.load(object)!!";
+            utils.each(data,function (perdata, selector) {
+                selector = document.querySelector(selector);
+                var parent = selector.parentNode;
+                if(selector){
+                    var clone = selector.cloneNode(true);
+
+                    var result = template.dispatch(perdata,clone);
+                    if(utils.isArray(result)) {
+                        utils.each(result, function (item) {
+                            parent.appendChild(item);
+                        });
+                    }
+                    // console.log(clone,perdata);//元素和元素的数据
+                    // parent.appendChild(template.dispatch(perdata,clone));
+                    selector.style.display = 'none';
+                    // console.log(clone);
+                }
+            });
+        },
+        dispatch:function (data, ele) {
+            // return console.log(data,ele);
+            if(utils.isArray(data)){
+                return template.cloneList(ele,data);
+            }else if(utils.isObject(data)){
+                return template.getIndividual(ele,data);
+            }else{
+                return template.parse(ele,data);
+            }
+        },
+        getIndividual:function (element,data) {
+            var ele = clone = undefined;
+            soya.utils.each(data,function (item, selector) {
+                 // console.log(item,selector);return ;
+                ele = element.querySelector(selector);
+                ele && template.dispatch(item,ele);
+            });
+            return element;
+        },
+        /**
+         * 讲元素克隆并发会列表
+         * @param element 待克隆的元素，克隆完毕后将消失
+         * @param datas 克隆所需要的数据列表
+         * @param env 克隆的数据依附的环境
+         * @returns {Array} 返回克隆的元素列表
+         */
+        cloneList:function (element,datas,env) {
+            var clone = undefined;
+            var list = [];
+            soya.utils.each(datas,function (data) {
+                clone = element.cloneNode(true);
+                clone = template.parse(clone,data);
+                env && env.appendChild(clone);
+                list.push(clone);
+            });
+            element.style.display = 'none';
+            return list;
+        },
+        /**
+         * 元素数据解析
+         * @param ele 待解析的元素
+         * @param data 解析所需要的数据
+         * @returns {*} 将解析完毕的元素原样返回
+         */
+        parse:function (ele,data) {
+            var e;
+            soya.utils.each(data,function (value, key) {
+                var arr = key.split('&');
+                e = ele.querySelector(arr[0]);
+                if(2 == arr.length){
+                    if(e){
+                        if(arr[1]){
+                            e.setAttribute(arr[1],value);
+                        }else{
+                            e.innerHTML = value;
+                        }
+                    }
+                }else{
+                    //未设置分隔符号时直接设置innerHTML
+                    e.innerHTML = value;
+                }
+            });
+            return ele;
+        }
+    };
+
     return {
+        clone:clone,
         init:function (config) {
             utils.each(config,function (item,key) {
                 options.hasOwnProperty(key) && (options[key] = item);
@@ -877,9 +1039,11 @@ window.soya = (function(){
         },
         context:context,
         utils:utils,
+        template:template,
         /**
          * 新建一个DOM元素
          * @param expression 元素表达式
+         * @param inner 设置innerHTML
          */
         newElement:function (expression,inner) {
             var tagname  = expression, classes, id;

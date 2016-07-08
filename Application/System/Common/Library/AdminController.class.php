@@ -44,7 +44,7 @@ abstract class AdminController extends CommonController{
         ]));
 
         //获取调用自己的函数
-        null === $template and $template = SEK::getCallPlace(SEK::CALL_ELEMENT_FUNCTION,SEK::CALL_PLACE_FORWARD)[SEK::CALL_ELEMENT_FUNCTION];
+        null === $template and $template = SEK::backtrace(SEK::ELEMENT_FUNCTION,SEK::PLACE_FORWARD);
         $this->display($template /* substr($template,4) 第五个字符开始 */, $cache_id , $compile_id, $parent);
     }
 
