@@ -7,53 +7,49 @@
  * Time: 9:47 PM
  */
 namespace Application\Wechat\Controller;
-use Application\Wechat\Common\Library\Wechat;
+use Application\Wechat\Common\Library\MessageInterface;
 
-
+/**
+ * Class IndexController
+ * @package Application\Wechat\Controller
+ */
 class IndexController {
 
-    protected $AppID = 'wxd10144c82235ff4f';
-    protected $AppSecret = 'f8d6a3fd9f35404521353956714aa165';
+    /**
+     * 开发者的Token
+     * @var string
+     */
+    protected $token = 'linzhv';
 
+    /**
+     * 微信入口
+     */
     public function index(){
-        define("TOKEN", "linzhv");
-        $wechatObj = new Wechat();
-        isset($_GET['echostr'])?$wechatObj->valid():$wechatObj->responseMsg();
-
-    }
-
-
-    public function valid()     {
-        $echoStr = $_GET["echostr"];
-        //valid signature , option
-        if($this->checkSignature()){
-            echo $echoStr;
-            exit;
-        }
-    }
-
-    private function checkSignature()     {
-        // you must define TOKEN by yourself
-        if (!defined("TOKEN")) {
-            throw new \Exception('TOKEN is not defined!');
-        }
-
-        $signature = $_GET["signature"];
-        $timestamp = $_GET["timestamp"];
-        $nonce = $_GET["nonce"];
-
-        $token = TOKEN;
-        $tmpArr = array($token, $timestamp, $nonce);
-        // use SORT_STRING rule
-        sort($tmpArr, SORT_STRING);
-        $tmpStr = implode( $tmpArr );
-        $tmpStr = sha1( $tmpStr );
-
-        if( $tmpStr == $signature ){
-            return true;
+        define('TOKEN', 'linzhv');
+        if(isset($_GET['echostr'])){
+            //valid
+            if($this->checkSignature()){
+                exit($_GET['echostr']);
+            }
         }else{
-            return false;
+            $message = new MessageInterface();
+            $message->receive() and $message->response(function($type,$entity)use($message){
+                $content = "消息类型是'$type':   \n消息体：";
+                return $message->responseText($content.var_export($entity,true));
+            });
         }
+        exit();
     }
+
+    /**
+     * 检查签名
+     * @return bool
+     */
+    private function checkSignature()     {
+        $tmpArr = array($this->token, $_GET['timestamp'], $_GET['nonce']);
+        sort($tmpArr, SORT_STRING);
+        return sha1(implode($tmpArr)) === $_GET['signature'];
+    }
+
 
 }

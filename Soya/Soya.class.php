@@ -567,7 +567,8 @@ class Soya {
             //load the outer config
             if(null === $conf) $conf = SEK::fetchClassConstant($clsnm,'CONF_NAME',null);//outer constant name
             if(is_string($conf)) $conf = self::loadConfig($conf);
-            is_array($conf) and SEK::merge(self::$_config[$clsnm],$conf);
+//            \Soya\dumpout($conf,self::$_config[$clsnm]);
+            is_array($conf) and SEK::merge(self::$_config[$clsnm],$conf,true);
         }
         return true;
     }

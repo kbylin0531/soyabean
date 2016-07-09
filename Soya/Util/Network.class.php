@@ -294,7 +294,7 @@ class Network {
             }
             return $content;
         } else {
-            return FALSE;
+            return false;
         }
     }
 

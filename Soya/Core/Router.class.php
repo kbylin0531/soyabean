@@ -15,50 +15,161 @@ namespace Soya\Core;
  */
 class Router extends \Soya{
 
-    public function parse(){
-        $result = null;
-        $pathinfo = $_SERVER['PATH_INFO'];
-        if($pathinfo === '/wechat'){
-            $result = [
-                'm' => 'Wechat',
-                'c' => 'Index',
-                'a' => 'index',
-                'p' => [],
-            ];
-        }
-        return $result;
+    const CONF_NAME = 'route';
+    const CONF_CONVENTION = [
+        'STATIC_ROUTE_ON'   => true,
+        //静态路由规则
+        'STATIC_ROUTE_RULES' => [],
+        'WILDCARD_ROUTE_ON' => false,
+        //通配符路由规则,具体参考CodeIgniter
+        'WILDCARD_ROUTE_RULES' => [],
+        'REGULAR_ROUTE_ON'  => 'false',
+        //正则表达式 规则
+        'REGULAR_ROUTE_RULES' => [],
+    ];
+    /**
+     * 类配置
+     * @var array
+     */
+    private $config = [];
+
+    /**
+     * Router constructor.
+     * @param false|null|string $identify
+     */
+    public function __construct($identify){
+        parent::__construct($identify);
+        $this->config = self::getConfig();
+//        \Soya\dumpout($this->config);
     }
 
     /**
-     * @param $uri
-     * @return mixed|null 返回匹配的路由规则，无匹配时返回null
+     * 解析路由规则
+     * @param string|null $pathinfo 请求路径
+     * @return array|null|string
      */
-    private function fetchURIRoute($uri){
-        $config = self::getConfig();
+    public function parse($pathinfo=null){
+        $pathinfo or $pathinfo = $_SERVER['PATH_INFO'];
+
         //静态路由
-        if($config['STATIC_ROUTE_ON'] and $config['STATIC_ROUTE_RULES']){
-            if(isset($config['STATIC_ROUTE_RULES'][$uri])){
-                return $config['STATIC_ROUTE_RULES'][$uri];
+        if($this->config['STATIC_ROUTE_ON'] and $this->config['STATIC_ROUTE_RULES']){
+            if(isset($this->config['STATIC_ROUTE_RULES'][$pathinfo])){
+                return $this->config['STATIC_ROUTE_RULES'][$pathinfo];
             }
         }
         //规则路由
-        if($config['WILDCARD_ROUTE_ON'] and $config['WILDCARD_ROUTE_RULES']){
-            foreach($config['WILDCARD_ROUTE_RULES'] as $pattern => $rule){
+        if($this->config['WILDCARD_ROUTE_ON'] and $this->config['WILDCARD_ROUTE_RULES']){
+            foreach($this->config['WILDCARD_ROUTE_RULES'] as $pattern => $rule){
                 $pattern = preg_replace('/\[.+?\]/','([^/\[\]]+)',$pattern);//非贪婪匹配
-                $rst = $this->_matchRegular($pattern,$rule, trim($uri,' /'));
+                $rst = $this->_matchRegular($pattern,$rule, trim($pathinfo,' /'));
                 if(null !== $rst) return $rst;
             }
         }
         //正则路由
-        if($config['REGULAR_ROUTE_ON'] and $config['REGULAR_ROUTE_RULES']){
-            foreach($config['REGULAR_ROUTE_RULES'] as $pattern => $rule){
-                $rst = $this->_matchRegular($pattern,$rule, trim($uri,' /'));
+        if($this->config['REGULAR_ROUTE_ON'] and $this->config['REGULAR_ROUTE_RULES']){
+            foreach($this->config['REGULAR_ROUTE_RULES'] as $pattern => $rule){
+                $rst = $this->_matchRegular($pattern,$rule, trim($pathinfo,' /'));
                 if(null !== $rst) return $rst;
             }
         }
         return null;
     }
-    
+
+
+    /**
+     * 解析直接路由规则
+     * 直接路由规则将分为三类：
+     *  ①静态直接路由地址
+     *  ②匹配符路由规则
+     *  ③正则式路由规则
+     * 优先级从高到低级排列
+     * @param string $uri uri地址
+     * @return array|null|string 返回array表示完整的解析结果
+     *                           返回string将交给Router继续代替原始地址进行进一步的解析
+     *                           返回null表示未找到匹配项目
+     */
+    public function parseDirectRules($uri){
+        if(!isset($this->cache[$uri])){
+            $target = $this->parseStatic($uri);
+            if(null === $target){
+                $target = $this->parseWildcard($uri);
+                if(null === $target){
+                    $target = $this->parseRegular($uri);
+                }
+            }
+            $this->cache[$uri] = (isset($target) and is_array($target))?[
+                'm' => isset($target[0])?$target[0]:null,
+                'c' => isset($target[1])?$target[1]:null,
+                'a' => isset($target[2])?$target[2]:null,
+                'p' => isset($target[3])?$target[3]:null,
+            ]:$target;
+        }
+        return $this->cache[$uri];
+    }
+
+    /**
+     * 解析静太路由规则,解析时忽略大小写
+     * 返回非null值时表示
+     * @param string $url url地址
+     * @return array|string|null
+     */
+    protected function parseStatic($url){
+        if(isset($this->config['STATIC_ROUTE_RULES'])){
+            foreach($this->config['STATIC_ROUTE_RULES'] as $rule => $target){
+                if(0 === strcasecmp($url,trim($rule))){
+                    if(is_callable($target)){
+                        $target = call_user_func_array($target,[$rule]);
+                    }
+                    if(is_string($target) or is_array($target)){
+                        return $target;
+                    }else{
+                        //匹配了但是规则不符合，直接报错退出
+                        Exception::throwing('Unexpect parameter!'.var_export($target,true));
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * 解析通配符路由规则
+     * 实际上通过正则表达式简介实现
+     * @param string $uri 待匹配的URI地址
+     * @return array|string|null
+     */
+    protected function parseWildcard($uri){
+        if(isset($this->config['WILDCARD_ROUTE_RULES'])){
+            foreach($this->config['WILDCARD_ROUTE_RULES'] as $rule => $target){
+                $rule = preg_replace('/\[.+?\]/','([^/\[\]]+)',$rule);//非贪婪匹配
+                $rst = $this->_matchRegular($rule,$target, trim($uri,' /'));
+                if(isset($rst)){
+                    return $rst;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 解析通配符正则表达式路由规则
+     * @param string $uri 待匹配的URI地址
+     * @return mixed|null
+     */
+    protected function parseRegular($uri){
+        if(isset($this->config['REGULAR_ROUTE_RULES'])){
+            foreach($this->config['REGULAR_ROUTE_RULES'] as $rule => $target){
+                $rst = $this->_matchRegular($rule,$target, trim($uri,' /'));
+                if(isset($rst)){
+                    return $rst;
+                }
+            }
+        }
+        return null;
+    }
+
+
     /**
      * 使用正则表达式匹配uri
      * @param string $pattern 路由规则
@@ -98,4 +209,5 @@ class Router extends \Soya{
         }
         return null;
     }
+
 }

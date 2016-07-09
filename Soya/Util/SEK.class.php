@@ -24,17 +24,24 @@ final class SEK {
      * @return void
      */
     public static function merge(array &$dest,array $sourse,$cover=false){
-        if($cover){
-            $dest = array_merge($dest,$sourse);
-        }else{
-            foreach($sourse as $key=>$val){
-                if(key_exists($key,$dest)){
-                    if(is_array($val)){
-                        self::merge($dest[$key],$val);
+        foreach($sourse as $key=>$val){
+            $exists = key_exists($key,$dest);
+            if($cover){
+                //覆盖模式
+                if($exists){
+                    //键存在时依据是否为数组
+                    if(is_array($dest[$key])){
+                        SEK::merge($dest[$key],$val,true);
                     }else{
-                        isset($sourse[$key]) and $dest[$key] = $val;
+                        $dest[$key] = $val;
                     }
+                }else{
+                    //键不存在时直接覆盖
+                    $dest[$key] = $val;
                 }
+            }else{
+                //非覆盖模式
+                $exists and $dest[$key] = $val;
             }
         }
     }
