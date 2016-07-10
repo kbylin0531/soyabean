@@ -23,8 +23,10 @@ class IndexController {
 
     /**
      * 微信入口
+     * @param string $id 公众号ID
      */
-    public function index(){
+    public function index($id){
+        \Soya\dumpout($id);
         define('TOKEN', 'linzhv');
         if(isset($_GET['echostr'])){
             //valid

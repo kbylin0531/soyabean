@@ -38,9 +38,9 @@ class MessageInterface {
      * 开发者的Token
      * @var string
      */
-    protected $token = 'linzhv';
-    protected $AppID = 'wxd10144c82235ff4f';
-    protected $AppSecret = 'f8d6a3fd9f35404521353956714aa165';
+    private $token = 'linzhv';
+    private $AppID = 'wxd10144c82235ff4f';
+    private $AppSecret = 'f8d6a3fd9f35404521353956714aa165';
 
     /**
      * 开发者设置的EncodingAESKey
@@ -56,27 +56,27 @@ class MessageInterface {
      * 接受到的消息对象
      * @var Object
      */
-    protected $MsgEntity = '';
+    private $MsgEntity = '';
     /**
      * 接受到的消息类型
      * @var string
      */
-    protected $MsgType = '';
+    private $MsgType = '';
     /**
      * 发送方帐号（一个OpenID）
      * @var string
      */
-    protected $FromUserName = '';
+    private $FromUserName = '';
     /**
      * 开发者微信号
      * @var string
      */
-    protected $ToUserName = '';
+    private $ToUserName = '';
     /**
      * 消息创建时间(差不多是发送时间)
      * @var int
      */
-    protected $CreateTime = 0;
+    private $CreateTime = 0;
 
     /**
      * 接收消息

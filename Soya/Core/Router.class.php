@@ -60,8 +60,11 @@ class Router extends \Soya{
         //规则路由
         if($this->config['WILDCARD_ROUTE_ON'] and $this->config['WILDCARD_ROUTE_RULES']){
             foreach($this->config['WILDCARD_ROUTE_RULES'] as $pattern => $rule){
-                $pattern = preg_replace('/\[.+?\]/','([^/\[\]]+)',$pattern);//非贪婪匹配
-                $rst = $this->_matchRegular($pattern,$rule, trim($pathinfo,' /'));
+                // Convert wildcards to RegEx（from CI）
+                //any对应非/的任何字符 num对应数字
+                $pattern = str_replace(array('[any]', '[num]'), array('([^/]+)', '([0-9]+)'), $pattern);
+//                $pattern = preg_replace('/\[.+?\]/','([^/\[\]]+)',$pattern);//非贪婪匹配
+                $rst = $this->_matchRegular($pattern,$rule, $pathinfo);
                 if(null !== $rst) return $rst;
             }
         }
@@ -179,20 +182,40 @@ class Router extends \Soya{
      */
     private function _matchRegular($pattern, $rule, $uri){
         // Does the RegEx match? use '#' to ignore '/'
+//        \Soya\dumpout($pattern, $rule, $uri,preg_match('#^'.$pattern.'$#', $uri, $matches));
         if (preg_match('#^'.$pattern.'$#', $uri, $matches)) {
             if(is_array($rule)){
-                if(isset($rule[3])){
-                    $index = 1;//忽略第一个匹配（全匹配）
-                    foreach($rule[3] as $pname=>&$pval){
-                        if(isset($matches[$index])){
-                            $pval = $matches[$index];
+                $len = count($matches);
+                for($i = 1; $i < $len; $i++){
+                    $key = '$'.$i;
+                    if(isset($rule['$'.$i])){
+                        $v = (string)$rule[$key];
+                        if(strpos($v,'.')){
+                            $a = explode('.',$v);
+                            empty($rule[$a[0]]) and $rule[$a[0]] = [];
+                            $rule[$a[0]][$a[1]] = $matches[$i];
+                        }else{
+                            $rule[$v] = $matches[$i];
                         }
-                        ++$index;
+                    }else{
+                        empty($rule['o']) and $rule['o'] = [];
+                        $rule['o'][] = $matches[$i];
                     }
-                    $_GET = array_merge($rule[3],$_GET);// 优先使用$_GET覆盖
-                }else{
-                    //未设置参数项，不作动作
+                    unset($rule[$key]);
                 }
+//                \Soya\dumpout($matches,$rule);
+//                if(isset($rule[3])){
+//                    $index = 1;//忽略第一个匹配（全匹配）
+//                    foreach($rule[3] as $pname=>&$pval){
+//                        if(isset($matches[$index])){
+//                            $pval = $matches[$index];
+//                        }
+//                        ++$index;
+//                    }
+//                    $_GET = array_merge($rule[3],$_GET);// 优先使用$_GET覆盖
+//                }else{
+//                    //未设置参数项，不作动作
+//                }
             }elseif(is_string($rule)){
                 $rule = preg_replace('#^'.$pattern.'$#', $rule, $uri);//参数一代表的正则表达式从参数三的字符串中寻找匹配并替换到参数二代表的字符串中
             }elseif(is_callable($rule)){
