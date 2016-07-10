@@ -16,14 +16,20 @@ use Soya\Core\Exception;
 class File implements SessionInterface{
 
     /**
-     * 清除指定名称的session
-     * @param string|array $name 如果为null将清空全部
+     * 清空全部session
      * @return void
      */
-    public function clear($name=null){
-        if(null === $name){
-            $_SESSION = array();
-        }elseif(is_string($name)){
+    public function clear(){
+        $_SESSION = [];
+    }
+
+    /**
+     * 清除指定名称的session
+     * @param string|array $name 如果为null将清空全部
+     * @return mixed
+     */
+    public function delete($name){
+        if(is_string($name)){
             if(strpos($name,'.')){
                 list($name1,$name2) =   explode('.',$name);
                 unset($_SESSION[$name1][$name2]);
@@ -32,12 +38,14 @@ class File implements SessionInterface{
             }
         }elseif(is_array($name)){
             foreach($name as $val){
-                $this->clear($val);
+                $this->delete($val);
             }
         }else{
             Exception::throwing($name);
         }
     }
+
+
     /**
      * 检查是否设置了指定名称的session
      * @param string $name

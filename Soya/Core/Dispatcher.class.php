@@ -64,10 +64,14 @@ class Dispatcher extends \Soya {
 
         self::trace($modules,$ctrler,$action);
 
+        $modulepath = PATH_BASE."Application/{$modules}";//linux 不识别 \\
+
         strpos($modules,'/') and $modules = str_replace('/','\\',$modules);
 
         //模块检测
-        is_dir(PATH_BASE."Application/{$modules}") or ModuleNotFoundException::throwing($modules);
+        if(!is_dir($modulepath)){
+            ModuleNotFoundException::throwing($modules);
+        }
 
         //在执行方法之前定义常量,为了能在控制器的构造函数中使用这三个常量
         define('REQUEST_MODULE',$modules);//请求的模块

@@ -1,4 +1,4 @@
-<extend name="Base/common_no_side"/>
+<extend file="/Wechat/View/Base/common_no_side.html"/>
 <block name="body">
     <div class="wrap">
         <section id="contents">
@@ -21,7 +21,7 @@
                     该账号的配置信息已提交!<br/>我们的工作人员将在3个工作日内对信息进行审核并电话告知审核结果，请耐心等待。
                     <br/>
                     <br/>
-                    <a href="{ ('Home/Public/add',array('id'=>I('id')))}">修改配置信息</a>
+                    <a href="__CONTROLLER__/add">修改配置信息</a>
                 </p>
             </div>
         </section>

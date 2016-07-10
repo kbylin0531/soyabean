@@ -45,53 +45,51 @@
           <input type="hidden" name="id" value="intval">
           <button target-form="form-horizontal" type="submit" id="submit" class="btn submit-btn ajax-post">提 交</button>
           <br/>
-          <p style="padding:20px 0;">配置信息遇到问题？<a href="__ROOT__/Home/index/lead" target="_blank">点击查看接入指引</a></p>
+          <p style="padding:20px 0;">配置信息遇到问题？<a href="__ROOT__/Home/index/lead" target="_blank">点击查看接入指引</a>
+              &nbsp;&nbsp;
+              <a href="javascript:void(0);" id="look_help">查看帮助</a>
+              <a href="javascript:void(0);" style="display: none" id="hide_help">隐藏帮助</a>
+          </p>
         </div>
       </div>
       </div>
     </form>
   </div>
   
-  <!--帮助消息
-  <div class="help_content">
+  <div class="help_content" style="display: none" >
       <h3>帮助信息</h3>
       <p>以上消息可以从公众平台里找到，如下图</p>
-      <p><img src="{SITE_URL}/Public/Home/images/help01.png" width="800"></p>
+      <p><img src="__IMG__/help01.png" width="800"></p>
       <a name="setting"></a>
        <p>配置域名授权：在开发者中心，功能列表里配置，配置授权域名如下图</p>
-      <p><img src="{SITE_URL}/Public/Home/images/help05.png" width="800"></p>
+      <p><img src="__IMG__/help05.png" width="800"></p>
        <p>配置JS接口安全域名，在公众号设置-功能配置里面配置，配置JS安全域名如下图</p>
-      <p><img src="{SITE_URL}/Public/Home/images/help06.png" width="800"></p>
+      <p><img src="__IMG__/help06.png" width="800"></p>
   </div>
-  --> 
 </section>
 </div>
 </block>
 <block name="script">
-  <link href="__STATIC__/datetimepicker/css/datetimepicker.css" rel="stylesheet" type="text/css">
-<link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css" rel="stylesheet" type="text/css">
-  <link href="__STATIC__/datetimepicker/css/dropdown.css" rel="stylesheet" type="text/css">
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script> 
   <script type="text/javascript">
-$('#submit').click(function(){
-    $('#form').submit();
-});
-
 $(function(){
-	 initUploadImg();
-    $('.time').datetimepicker({
-        format: 'yyyy-mm-dd hh:ii',
-        language:"zh-CN",
-        minView:0,
-        autoclose:true
+    var look_help = $("#look_help");
+    var help_content = $(".help_content");
+    var hide_help = $("#hide_help");
+    look_help.click(function () {
+        help_content.css("display","");
+        look_help.css("display","none");
+        hide_help.css("display","");
     });
-    $('.date').datetimepicker({
-        format: 'yyyy-mm-dd',
-        language:"zh-CN",
-        minView:2,
-        autoclose:true
-    });	
+    hide_help.click(function () {
+        help_content.css("display","none");
+        look_help.css("display","");
+        hide_help.css("display","none");
+    });
+
+    $('#submit').click(function(){
+        $('#form').submit();
+    });
+
     showTab();
 });
 </script> 

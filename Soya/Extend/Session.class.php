@@ -103,6 +103,7 @@ class Session extends \Soya{
         if(isset($config['LIMITER_TYPE']) and is_dir($config['LIMITER_TYPE'])){
             self::cacheLimiter($config['LIMITER_TYPE']);
         }
+        $this->begin();
     }
 
 
@@ -347,14 +348,23 @@ class Session extends \Soya{
         return $this->_driver->has($name);
     }
 
+
+    /**
+     * 删除所有session
+     * @return void
+     */
+    public function clear(){
+        $this->_driver->clear();
+    }
+
     /**
      * 清除指定名称的session
      * @param string|array $name 如果为null将清空全部
-     * @return void
+     * @return mixed
      */
-    public function clear($name=null){
-        self::begin();
-        $this->_driver->clear($name);
+    public function delete($name){
+        return $this->_driver->delete($name);
     }
+
 
 }

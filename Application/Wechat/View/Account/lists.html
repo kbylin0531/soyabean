@@ -13,73 +13,42 @@
                 </div>
             </div>
             <div class="data-table" style="margin:0;">
-                <div class="table-striped">
-                    <table cellspacing="1">
-                        <!-- 表头 -->
-                        <thead>
-                        <tr>
-                            <th width="8%">公众号ID</th>
-                            <th width="32%">公众号名称</th>
-                            <th width="15%">Token</th>
-                            <th width="10%">管理员数</th>
-                            <th width="35%">操作</th>
-                        </tr>
-                        </thead>
-
-                        <!-- 列表 -->
-                        <tbody>
-
-                        <tr>
-                            <td>111</td>
-                            <td>public_name</td>
-                            <td>token</td>
-                            <td>count</td>
-                            <td>
-                                <a href="C_/Home/Index/main" target="_self">进入管理</a>&nbsp;&nbsp;&nbsp;
-                                <a href="__ROOT__/Home/Public/checkRes" target="_self">自动检测</a>&nbsp;&nbsp;&nbsp;
-                                <a href="__ROOT__/Home/PublicLink/lists" target="_self">管理员配置</a>&nbsp;&nbsp;&nbsp;
-                                <a href="__CONTROLLER__/stepFisrt" target="_self">编辑</a>&nbsp;&nbsp;&nbsp;
-                                <a href="javascript:;" onclick="">取消绑定</a>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-
-                </div>
-                <div style="padding:100px; text-align:center;">
-                    <i class="fa fa-wechat fa-lg "></i> 你还没有创建公众号
-                </div>
-            </div>
-
-            <h3 style="margin:15px 0;">
-                <i class="fa fa-user fa-lg"></i>
-                我加入的公众号</h3>
-            <div class="data-table" style="margin:0">
-                <div class="table-striped">
-                    <table cellspacing="1">
-                        <!-- 表头 -->
-                        <thead>
-                        <tr>
-                            <th width="8%">公众号ID</th>
-                            <th width="32%">公众号名称</th>
-                            <th width="15%">Token</th>
-                            <th width="10%">管理员数</th>
-                            <th width="35%">操作</th>
-                        </tr>
-                        </thead>
-
-                        <!-- 列表 -->
-                        <tbody>
-                        <tr>
-                            <td>111</td>
-                            <td>public_name</td>
-                            <td>token</td>
-                            <td>count</td>
-                            <td><a href="__MODULE__/Home/Index/main" target="_self">进入管理</a></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <notempty name="list">
+                    <div class="table-striped">
+                        <table cellspacing="1">
+                            <!-- 表头 -->
+                            <thead>
+                            <tr>
+                                <th width="10%">公众号ID</th>
+                                <th width="35%">公众号名称</th>
+                                <th width="17%">Token</th>
+                                <th width="38%">操作</th>
+                            </tr>
+                            </thead>
+                            <!-- 列表 -->
+                            <tbody>
+                            <volist name="list" id="data">
+                                <tr>
+                                    <td>{$data.id}</td>
+                                    <td>{$data.name}</td>
+                                    <td>{$data.token}</td>
+                                    <td>
+                                        <a href="__MODULE__/Management/index?id={$data.id}" target="_self">进入管理</a>&nbsp;&nbsp;&nbsp;
+                                        <a href="__CONTROLLER__/checkRes?id={$data.id}" target="_self">自动检测</a>&nbsp;&nbsp;&nbsp;
+                                        <a href="__MODULE__/AccountAdmin/index?id={$data.id}" target="_self">管理员配置</a>&nbsp;&nbsp;&nbsp;
+                                        <a href="__CONTROLLER__/stepFirst?id={$data.id}" target="_self">编辑</a>&nbsp;&nbsp;&nbsp;
+                                        <a href="javascript:void(0);"
+                                           onclick="do_del('{$data.id}','{$data.name}');">取消绑定</a></td>
+                                </tr>
+                            </volist>
+                            </tbody>
+                        </table>
+                    </div>
+                <else />
+                    <div style="padding:100px; text-align:center;">
+                        <i class="fa fa-wechat fa-lg "></i> 您当前没有可管理的公众号
+                    </div>
+                </notempty>
             </div>
         </section>
     </div>
@@ -90,8 +59,7 @@
         function do_del(id, name) {
             var msg = '您确定要 取消绑定 以下公众号吗？  ' + name;
             if (confirm(msg)) {
-                var url = "__CONTROLLER__/del";
-                $.post(url, {'id': id}, function () {
+                $.post("__CONTROLLER__/del", {'id': id}, function () {
                     location.reload();
                 });
             }

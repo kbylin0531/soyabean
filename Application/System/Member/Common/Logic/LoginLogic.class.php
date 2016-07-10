@@ -73,19 +73,22 @@ class LoginLogic extends Logic {
 
     /**
      * 获取登录信息
-     * @param bool $throw 如果未登录是否抛出异常
-     * @return array|null
-     * @throws Exception
+     * @param string $name 信息名称
+     * @return array|false|null|mixed 发生了错误时返回FALSE
      */
-    public function getLoginInfo($throw=true){
+    public function getLoginInfo($name=null){
         static $info = null;
         if(null === $info){
             $session = Session::getInstance();
             $info = $session->get(self::$key);
             if(null === $session){
                 //用户未登录,按照情况执行抛出异常操作或者返回null
-                return $throw?Exception::throwing('用户未登录，无法执行该操作！'):null;
+                return false;//'用户未登录，无法执行该操作！'
             }
+        }
+
+        if($name){
+            return isset($info[$name])?$info[$name]:null;
         }
         return $info;
     }

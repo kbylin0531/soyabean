@@ -10,56 +10,55 @@
       <div class="tab-content bind_step_form"> 
       		<div class="item_wrap" style="width:600px; padding:90px 0;">
               <strong>请在公众平台开发者中心里的服务器配置录入以下参数</strong>
-              <p>URL(服务器地址)：<span style="color: #FF0000">
-                  home/weixin/index</span><br>
-              Token(令牌)：<span style="color: #F00">{ SYSTEM_TOKEN}</span><br>
+              <p>URL(服务器地址)：<span style="color: #FF0000">{$url}</span><br>
+              Token(令牌)：<span style="color: #F00">{$token}</span><br>
               EncodingAESKey(消息加解密密钥)：点击随机生成得到密钥，不需要自己填写<br>
               消息加解密方式： 根据自己的需要选择其中一种
               </p>
               <p>&nbsp;</p>
             </div>
               <div class="bind_step_form_next_item">
-              	<a class="btn submit-btn" href="Home/Public/step_2">下一步</a>
+              	<a class="btn submit-btn" href="__CONTROLLER__/stepThird">下一步</a>
              	<br/>
-          	  	<p style="padding:20px 0;">配置信息遇到问题？<a href="Home/index/lead" target="_blank">点击查看接入指引</a></p>
+          	  	<p style="padding:20px 0;">配置信息遇到问题？<a href="#" target="_blank">点击查看接入指引</a>
+
+                    &nbsp;&nbsp;
+                    <a href="javascript:void(0);" id="look_help">查看帮助</a>
+                    <a href="javascript:void(0);" style="display: none" id="hide_help">隐藏帮助</a>
+
+                </p>
               </div>
             
       </div>
-      <!--
-      <div class="help_content">
+      <div class="help_content" style="display: none" >
           <p>&nbsp;</p>
-          <p><img src="{ SITE_URL}/Public/Home/images/help02.png" ></p>
-          <p><img src="{ SITE_URL}/Public/Home/images/help03.png" ></p>
+          <p><img src="__IMG__/help02.png" ></p>
+          <p><img src="__IMG__/help03.png" ></p>
        </div>
-       -->
     </section>
    </div>
 </block>
 <block name="script">
-  <link href="__STATIC__/datetimepicker/css/datetimepicker.css" rel="stylesheet" type="text/css">
-    <link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css" rel="stylesheet" type="text/css">
-  <link href="__STATIC__/datetimepicker/css/dropdown.css" rel="stylesheet" type="text/css">
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.js"></script> 
-  <script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script> 
-  <script type="text/javascript">
-$('#submit').click(function(){
-    $('#form').submit();
-});
+<script type="text/javascript">
+    $(function(){
+        var look_help = $("#look_help");
+        var help_content = $(".help_content");
+        var hide_help = $("#hide_help");
+        look_help.click(function () {
+            help_content.css("display","");
+            look_help.css("display","none");
+            hide_help.css("display","");
+        });
+        hide_help.click(function () {
+            help_content.css("display","none");
+            look_help.css("display","");
+            hide_help.css("display","none");
+        });
 
-$(function(){
-    $('.time').datetimepicker({
-        format: 'yyyy-mm-dd hh:ii',
-        language:"zh-CN",
-        minView:0,
-        autoclose:true
+        $('#submit').click(function(){
+            $('#form').submit();
+        });
+        showTab();
     });
-    $('.date').datetimepicker({
-        format: 'yyyy-mm-dd',
-        language:"zh-CN",
-        minView:2,
-        autoclose:true
-    });	
-    showTab();
-});
 </script> 
 </block>

@@ -15,7 +15,7 @@ define('REQUEST_TIME',$_SERVER['REQUEST_TIME']);
 define ( 'HTTP_PREFIX', isset ( $_SERVER ['HTTPS'] ) && $_SERVER ['HTTPS'] == 'on' ? 'https://' : 'http://' );
 //---------------------------------- mode constant -------------------------------------//
 defined('DEBUG_MODE_ON') or define('DEBUG_MODE_ON', true);
-defined('PAGE_TRACE_ON') or define('PAGE_TRACE_ON', true);
+defined('PAGE_TRACE_ON') or define('PAGE_TRACE_ON', true);//在处理微信签名检查时会发生以外的错误
 //---------------------------------- variable type constant ------------------------------//
 const TYPE_BOOL     = 'boolean';
 const TYPE_INT      = 'integer';

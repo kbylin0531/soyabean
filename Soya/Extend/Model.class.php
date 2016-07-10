@@ -88,7 +88,7 @@ class Model {
      */
     protected $tablename = null;
     /**
-     * 字段列表
+     * 字段列表(不可以修改)
      * @var array|null
      */
     protected $fields = null;
@@ -109,6 +109,19 @@ class Model {
         $this->reset([
             'table'     => $this->tablename,
         ]);
+    }
+
+    /**
+     * 获取模型实例
+     * @return Model
+     */
+    public static function getInstance(){
+        static $instances = [];
+        $name = static::class;
+        if(!isset($instances[$name])){
+            $instances[$name] = new $name();
+        }
+        return $instances[$name];
     }
 
     /**

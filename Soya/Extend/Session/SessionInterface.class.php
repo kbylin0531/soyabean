@@ -35,10 +35,16 @@ interface SessionInterface {
      */
     public function has($name);
     /**
-     * 清除指定名称的session
-     * @param string|array $name 如果为null将清空全部
+     * 删除所有session
      * @return void
      */
-    public function clear($name=null);
+    public function clear();
+
+    /**
+     * 清除指定名称的session
+     * @param string|array $name 如果为null将清空全部
+     * @return mixed
+     */
+    public function delete($name);
 
 }

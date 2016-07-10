@@ -8,6 +8,7 @@
  */
 namespace Soya\Extend\Logger;
 use Soya\Core\Exception;
+use Soya\Core\Storage;
 use Soya\Util\Datetime;
 use Soya\Util\UserAgent;
 
@@ -37,6 +38,9 @@ class File implements LoggerInterface{
         }
         $remoteIp = UserAgent::getClientIP();
         $ready2write = "-------------------------------------------------------------------------------------\r\n {$date[0]}  IP:{$remoteIp}  URL:{$_SERVER['REQUEST_URI']}\r\n-------------------------------------------------------------------------------------\r\n{$ready2write}\r\n\r\n\r\n\r\n";
+
+        $dir = dirname($logpath);
+        is_dir($dir) or Storage::getInstance()->mkdir($dir);
 
         if(is_file($logpath)){
             $handler = fopen($logpath,'a+');//追加方式，如果文件不存在则无法创建
