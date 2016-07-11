@@ -11,6 +11,7 @@ use Kbylin\System\Core\Router;
 use Soya\Core\Exception;
 use Soya\Core\URI;
 use Soya\Util\Response;
+use Soya\Util\SEK;
 
 /**
  * Class Network 网络相关工具类
@@ -222,6 +223,70 @@ class Network {
 
 
 //----------------------- CURL方法 ------------------------------------------//
+    /**
+     * 请求json数据
+     * @param string $url
+     * @return mixed
+     */
+    public static function get4Json($url){
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $output = curl_exec($ch);
+        curl_close($ch);
+        return json_decode($output, true);
+    }
+
+    /**
+     * 发送post请求
+     * @param string $url 请求地址
+     * @param array $param 请求参数
+     * @param bool $is_file 是否请求上传文件
+     * @param bool $return_array 是否返回数组形式的结果
+     * @return mixed
+     */
+    public static function post4Json($url, $param, $is_file = false, $return_array = true) {
+        set_time_limit (0);
+        if (! $is_file && is_array ( $param )) {
+            $param = SEK::toJson( $param );
+        }
+        if ($is_file) {
+            $header [] = "content-type: multipart/form-data; charset=UTF-8";
+        } else {
+            $header [] = "content-type: application/json; charset=UTF-8";
+        }
+        $ch = curl_init ();
+
+        //全部数据使用HTTP协议中的 "POST" 操作来发送
+        if (class_exists ( '/CURLFile' )) { // php5.5跟php5.6中的CURLOPT_SAFE_UPLOAD的默认值不同
+            curl_setopt ( $ch, CURLOPT_SAFE_UPLOAD, true );
+        } else {
+            if (defined ( 'CURLOPT_SAFE_UPLOAD' )) {
+                curl_setopt ( $ch, CURLOPT_SAFE_UPLOAD, false );
+            }
+        }
+        curl_setopt ( $ch, CURLOPT_URL, $url ); //需要获取的 URL 地址，也可以在curl_init() 初始化会话的时候
+        curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, 'POST' );//HTTP 请求时，使用自定义的 Method 来代替"GET"或"HEAD"
+        curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, FALSE ); //	FALSE 禁止 cURL 验证对等证书
+        curl_setopt ( $ch, CURLOPT_SSL_VERIFYHOST, FALSE );//设置为 1 是检查服务器SSL证书中是否存在一个公用名(common name)
+        curl_setopt ( $ch, CURLOPT_HTTPHEADER, $header ); //设置 HTTP 头字段的数组。格式： array('Content-type: text/plain', 'Content-length: 100')
+        curl_setopt ( $ch, CURLOPT_USERAGENT, 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)' );//	在HTTP请求中包含一个"User-Agent: "头的字符串。
+        curl_setopt ( $ch, CURLOPT_FOLLOWLOCATION, 1 );
+        curl_setopt ( $ch, CURLOPT_AUTOREFERER, 1 );
+        curl_setopt ( $ch, CURLOPT_POSTFIELDS, $param );
+        curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
+        $res = curl_exec ( $ch );
+        curl_close ( $ch );
+//        $flat = curl_errno ( $ch );//get the last error number
+//        if ($flat) {
+//            curl_error ( $ch );
+            //TODO:记录删词发生的错误
+//        }
+        return $return_array?json_decode ( $res, true ):$res;
+    }
+
     /**
      * 模拟GET请求
      *

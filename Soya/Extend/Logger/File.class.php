@@ -28,11 +28,11 @@ class File implements LoggerInterface{
      */
     public function write($logpath,$content){
         $date = Datetime::getDate(true);
-        $ready2write = '';
         if(is_array($content)){//数组写入
-            foreach($content as $key=>$val){
-                $ready2write .= is_numeric($key)?"{$val}\n":"||--{$key}--||\n{$val}\n";
-            }
+//            foreach($content as $key=>$val){
+//                $ready2write .= is_numeric($key)?"{$val}\n":"||--{$key}--||\n{$val}\n";
+//            }
+            $ready2write = var_export($content,true);
         }else{
             $ready2write = $content;
         }

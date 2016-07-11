@@ -30,6 +30,7 @@ require_once __DIR__.'/Common/function.php';
  * @package Shep
  */
 class Soya {
+
     /**
      * 运行时的内存和时间状态
      * @var array
@@ -196,6 +197,11 @@ class Soya {
                     if(is_file($path)) include_once self::$_classes[$clsnm] = $path;
                 }
             }
+            //TODO：系统类加载时自动初始化
+            //存在该方法，进行初始化
+//            if(SEK::fetchClassConstant($clsnm,'CONF_NAME',null) === null){
+//                call_user_func("{$clsnm}::initClass");//自动进行初始化
+//            }
         };
         false === spl_autoload_register($loader) and die('自动加载函数注册失败');
         self::$_loader = $loader;
@@ -563,7 +569,7 @@ class Soya {
      * @param string|array|null $conf config name of config array.if set to null, it will refer to class constant 'CONF_NAME'
      * @return true
      */
-    protected static function initClass($clsnm=null,$conf=null){
+    public static function initClass($clsnm=null,$conf=null){
         $clsnm or $clsnm = static::class;
         if(!isset(self::$_config[static::class])){
             //get convention

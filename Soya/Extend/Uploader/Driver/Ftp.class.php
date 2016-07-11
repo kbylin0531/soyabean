@@ -92,10 +92,10 @@ class Ftp {
         $filename = $this->rootPath . $file['savepath'] . $file['savename'];
 
         /* 不覆盖同名文件 */
-        // if (!$replace && is_file($filename)) {
-        //     $this->error = '存在同名文件' . $file['savename'];
-        //     return false;
-        // }
+         if (!$replace and is_file($filename)) {
+             $this->error = '存在同名文件' . $file['savename'];
+             return false;
+         }
 
         /* 移动文件 */
         if (!ftp_put($this->link, $filename, $file['tmp_name'], FTP_BINARY)) {

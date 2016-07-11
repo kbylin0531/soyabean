@@ -92,22 +92,19 @@ class Router extends \Soya{
      *                           返回null表示未找到匹配项目
      */
     public function parseDirectRules($uri){
-        if(!isset($this->cache[$uri])){
-            $target = $this->parseStatic($uri);
+        $target = $this->parseStatic($uri);
+        if(null === $target){
+            $target = $this->parseWildcard($uri);
             if(null === $target){
-                $target = $this->parseWildcard($uri);
-                if(null === $target){
-                    $target = $this->parseRegular($uri);
-                }
+                $target = $this->parseRegular($uri);
             }
-            $this->cache[$uri] = (isset($target) and is_array($target))?[
-                'm' => isset($target[0])?$target[0]:null,
-                'c' => isset($target[1])?$target[1]:null,
-                'a' => isset($target[2])?$target[2]:null,
-                'p' => isset($target[3])?$target[3]:null,
-            ]:$target;
         }
-        return $this->cache[$uri];
+        return  (isset($target) and is_array($target))?[
+            'm' => isset($target[0])?$target[0]:null,
+            'c' => isset($target[1])?$target[1]:null,
+            'a' => isset($target[2])?$target[2]:null,
+            'p' => isset($target[3])?$target[3]:null,
+        ]:$target;
     }
 
     /**
@@ -181,6 +178,7 @@ class Router extends \Soya{
      * @return array|string|null
      */
     private function _matchRegular($pattern, $rule, $uri){
+        $result = null;
         // Does the RegEx match? use '#' to ignore '/'
 //        \Soya\dumpout($pattern, $rule, $uri,preg_match('#^'.$pattern.'$#', $uri, $matches));
         if (preg_match('#^'.$pattern.'$#', $uri, $matches)) {
@@ -203,6 +201,7 @@ class Router extends \Soya{
                     }
                     unset($rule[$key]);
                 }
+                $result = $rule;
 //                \Soya\dumpout($matches,$rule);
 //                if(isset($rule[3])){
 //                    $index = 1;//忽略第一个匹配（全匹配）
@@ -217,20 +216,21 @@ class Router extends \Soya{
 //                    //未设置参数项，不作动作
 //                }
             }elseif(is_string($rule)){
-                $rule = preg_replace('#^'.$pattern.'$#', $rule, $uri);//参数一代表的正则表达式从参数三的字符串中寻找匹配并替换到参数二代表的字符串中
+                $result = preg_replace('#^'.$pattern.'$#', $rule, $uri);//参数一代表的正则表达式从参数三的字符串中寻找匹配并替换到参数二代表的字符串中
             }elseif(is_callable($rule)){
-                // Remove the original string from the matches array.
-                $fulltext = array_shift($matches);
+                array_shift($matches);
                 // Execute the callback using the values in matches as its parameters.
-                $rule = call_user_func_array($rule, [$matches,$fulltext]);//参数二是完整的匹配
-                if(!is_string($rule) and !is_array($rule)){
+                $result = call_user_func_array($rule, $matches);//参数二是完整的匹配
+                if($result === true){
+                    //返回true表示直接完成
+                    exit();
+                }elseif(!is_string($rule) and !is_array($rule)){
                     //要求结果必须返回string或者数组
                     return null;
                 }
             }
-            return $rule;
         }
-        return null;
+        return $result;
     }
 
 }

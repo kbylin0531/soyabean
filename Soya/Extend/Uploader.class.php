@@ -6,32 +6,43 @@
  * Time: 15:17
  */
 namespace Soya\Extend;
+use Soya\Extend\Uploader\UploaderInterface;
 
-use Soya\Core\Exception;
+/**
+ * Class Uploader 文件上传类
+ * @package Soya\Extend
+ */
+class Uploader extends \Soya{
 
-class Uploader {
-    /**
-     * 默认上传配置
-     * @var array
-     */
-    private $config = array(
-        'mimes'         =>  array(), //允许上传的文件MiMe类型
+    const CONF_NAME = 'uploader';
+    const CONF_CONVENTION = [
+
+        'PRIOR_INDEX' => 0,//默认驱动ID，类型限定为int或者string
+        'DRIVER_CLASS_LIST' => [],//驱动类的列表
+        'DRIVER_CONFIG_LIST' => [],//驱动类列表参数
+
+        'mimes'         =>  [], //允许上传的文件MiMe类型
         'maxSize'       =>  0, //上传的文件大小限制 (0-不做限制)
-        'exts'          =>  array(), //允许上传的文件后缀
+        'exts'          =>  [], //允许上传的文件后缀
         'autoSub'       =>  true, //自动子目录保存文件
-        'subName'       =>  array('date', 'Y-m-d'), //子目录创建方式，[0]-函数名，[1]-参数，多个参数使用数组
+        'subName'       =>  ['date', 'Y-m-d'], //子目录创建方式，[0]-函数名，[1]-参数，多个参数使用数组
         'rootPath'      =>  './Uploads/', //保存根路径
         'savePath'      =>  '', //保存路径
-        'saveName'      =>  array('uniqid', ''), //上传文件命名规则，[0]-函数名，[1]-参数，多个参数使用数组
+        'saveName'      =>  ['uniqid', ''], //上传文件命名规则，[0]-函数名，[1]-参数，多个参数使用数组
         'saveExt'       =>  '', //文件保存后缀，空则使用原后缀
         'replace'       =>  false, //存在同名是否覆盖
         'hash'          =>  true, //是否生成hash编码
         'callback'      =>  false, //检测文件是否存在回调，如果存在返回文件信息数组
         'driver'        =>  '', // 文件上传驱动
-        'driverConfig'  =>  array(), // 上传驱动配置
+        'driverConfig'  =>  [], // 上传驱动配置
         'FILE_UPLOAD_TYPE'      =>  'Local',    // 文件上传方式
         'UPLOAD_TYPE_CONFIG'    =>  [],
-    );
+    ];
+    /**
+     * 默认上传配置
+     * @var array
+     */
+    private $config = [];
 
     /**
      * 上传错误信息
@@ -41,23 +52,18 @@ class Uploader {
 
     /**
      * 上传驱动实例
-     * @var Object
+     * @var UploaderInterface
      */
-    private $uploader;
+    protected $_driver = null;
 
     /**
      * 构造方法，用于构造上传实例
      * Uploader constructor.
-     * @param array $config 配置
-     * @param string $driver 要使用的上传驱动 LOCAL-本地上传驱动，FTP-FTP上传驱动
-     * @param null $driverConfig
+     * @param null $identify
      */
-    public function __construct($config = array(), $driver = '', $driverConfig = null){
-        /* 获取配置 */
-        $this->config   =   array_merge($this->config, $config);
-
-        /* 设置上传驱动 */
-        $this->setDriver($driver, $driverConfig);
+    public function __construct($identify=null){
+        parent::__construct($identify=null);
+        $this->config = self::getConfig();
 
         /* 调整配置，把字符串配置参数转换为数组 */
         if(!empty($this->config['mimes'])){
@@ -71,26 +77,6 @@ class Uploader {
                 $this->config['exts'] = explode(',', $this->config['exts']);
             }
             $this->config['exts'] = array_map('strtolower', $this->config['exts']);
-        }
-    }
-
-    /**
-     * 使用 $this->name 获取配置
-     * @param  string $name 配置名称
-     * @return mixed    配置值
-     */
-    public function __get($name) {
-        return $this->config[$name];
-    }
-
-    public function __set($name,$value){
-        if(isset($this->config[$name])) {
-            $this->config[$name] = $value;
-            if($name == 'driverConfig'){
-                //改变驱动配置后重置上传驱动
-                //注意：必须选改变驱动然后再改变驱动配置
-                $this->setDriver();
-            }
         }
     }
 
@@ -129,14 +115,14 @@ class Uploader {
         }
 
         /* 检测上传根目录 */
-        if(!$this->uploader->checkRootPath($this->config['rootPath'])){
-            $this->error = $this->uploader->getError();
+        if(!$this->_driver->checkRootPath($this->config['rootPath'])){
+            $this->error = $this->_driver->getError();
             return false;
         }
 
         /* 检查上传目录 */
-        if(!$this->uploader->checkSavePath($this->config['savePath'])){
-            $this->error = $this->uploader->getError();
+        if(!$this->_driver->checkSavePath($this->config['savePath'])){
+            $this->error = $this->_driver->getError();
             return false;
         }
 
@@ -207,11 +193,11 @@ class Uploader {
             }
 
             /* 保存文件 并记录保存成功的文件 */
-            if ($this->uploader->save($file,$this->config['replace'])) {
+            if ($this->_driver->save($file,$this->config['replace'])) {
                 unset($file['error'], $file['tmp_name']);
                 $info[$key] = $file;
             } else {
-                $this->error = $this->uploader->getError();
+                $this->error = $this->_driver->getError();
             }
         }
         if(isset($finfo)){
@@ -248,18 +234,6 @@ class Uploader {
         return $fileArray;
     }
 
-    /**
-     * 设置上传驱动
-     * @param string $driver 驱动名称
-     * @param array $config 驱动配置
-     */
-    private function setDriver($driver = null, $config = null){
-        $driver = $driver ? : ($this->config['driver']       ? : $this->config['FILE_UPLOAD_TYPE']);
-        $config = $config ? : ($this->config['driverConfig'] ? : $this->config['UPLOAD_TYPE_CONFIG']);
-        $class = strpos($driver,'\\')? $driver : 'Think\\Upload\\Driver\\'.ucfirst(strtolower($driver));
-        class_exists($class) or Exception::throwing("不存在上传驱动：{$class}");
-        $this->uploader = new $class($config);
-    }
 
     /**
      * 检查上传的文件
@@ -400,8 +374,8 @@ class Uploader {
         if ($this->config['autoSub'] && !empty($rule)) {
             $subpath = $this->getName($rule, $filename) . '/';
 
-            if(!empty($subpath) && !$this->uploader->mkdir($this->config['savePath'] . $subpath)){
-                $this->error = $this->uploader->getError();
+            if(!empty($subpath) && !$this->_driver->mkdir($this->config['savePath'] . $subpath)){
+                $this->error = $this->_driver->getError();
                 return false;
             }
         }

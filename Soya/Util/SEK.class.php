@@ -343,13 +343,41 @@ final class SEK {
      * 数组递归遍历
      * @param array $array 待递归调用的数组
      * @param callable $filter 遍历毁掉函数
+     * @param bool $keyalso 是否也应用到key上
      * @return array
      */
-    public static function arrayRecursiveWalk(array $array, callable $filter) {
+    public static function arrayRecursiveWalk(array $array, callable $filter,$keyalso=false) {
+        static $recursive_counter = 0;
+        if (++ $recursive_counter > 1000) die( 'possible deep recursion attack' );
         $result = [];
         foreach ($array as $key => $val) {
-            $result[$key] = is_array($val) ? self::arrayRecursiveWalk($val,$filter) : call_user_func($filter, $val);
+            $result[$key] = is_array($val) ? self::arrayRecursiveWalk($val,$filter,$keyalso) : call_user_func($filter, $val);
+
+            if ($keyalso and is_string ( $key )) {
+                $new_key = $filter ( $key );
+                if ($new_key != $key) {
+                    $array [$new_key] = $array [$key];
+                    unset ( $array [$key] );
+                }
+            }
         }
+        -- $recursive_counter;
         return $result;
     }
+
+
+
+    /**
+     * 将数组转换为JSON字符串（兼容中文）
+     * @access public
+     * @param array $array 要转换的数组
+     * @param string $filter
+     * @return string
+     */
+    public static function toJson(array $array,$filter='urlencode') {
+        self::arrayRecursiveWalk($array, $filter, true );
+        $json = json_encode ( $array );
+        return urldecode ( $json );
+    }
+
 }

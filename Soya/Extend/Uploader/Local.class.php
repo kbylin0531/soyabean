@@ -8,9 +8,13 @@
 // +----------------------------------------------------------------------
 // | Author: 麦当苗儿 <zuojiazi@vip.qq.com> <http://www.zjzit.cn>
 // +----------------------------------------------------------------------
+namespace Soya\Extend\Uploader;
 
-namespace Soya\Vendor\Think\Uploader;
-class Local{
+/**
+ * Class Local 本地驱动
+ * @package Soya\Vendor\Think\Uploader
+ */
+class Local implements UploaderInterface{
     /**
      * 上传文件根目录
      * @var string
@@ -98,7 +102,7 @@ class Local{
             return true;
         }
 
-        if(mkdir($dir, 0777, true)){
+        if(mkdir($dir, 0666, true)){
             return true;
         } else {
             $this->error = "目录 {$savepath} 创建失败！";

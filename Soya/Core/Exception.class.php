@@ -7,6 +7,7 @@
  */
 namespace Soya\Core;
 use Exception as phpException;
+use Soya\Extend\Logger;
 
 /**
  * Class Exception

@@ -17,17 +17,18 @@ use Soya\Util\SEK;
 class AccountModel extends Model {
 
     protected $tablename = 'sy_account';
-
     protected $fields = [
-        'uid'   => null,
-        'name'  => null,
-        'origin_id' => null,
-        'wechat'    => null,
-        'token'     => null,
-        'type'      => null,
-        'appid'     => null,
-        'appsecret' => null,
-        'encodingaeskey' => null,
+        'uid'                   => null,
+        'name'                  => null,
+        'origin_id'             => null,
+        'wechat'                => null,
+        'token'                 => null,
+        'type'                  => null,
+        'appid'                 => null,
+        'appsecret'             => null,
+        'encodingaeskey'        => null,
+        'access_token'          => null,
+        'access_token_expire'   => null,
     ];
 
     /**
@@ -38,6 +39,13 @@ class AccountModel extends Model {
     public function getAccountList($uid){
         $list = $this->where('uid = '.intval($uid))->select();
         return $list;
+    }
+
+    /**
+     * @return AccountModel
+     */
+    public static function getInstance(){
+        return parent::getInstance();
     }
 
     /**
