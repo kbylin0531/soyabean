@@ -34,7 +34,7 @@ class Page extends \Soya{
         'theme'  => '%FIRST% %UP_PAGE% %LINK_PAGE% %DOWN_PAGE% %END%',
 
         //分页参数名称
-        'VAR_PAGE'  => '_p'
+        'VAR_PAGE'  => 'page'
     ];
     /**
      * 起始行数
@@ -108,8 +108,6 @@ class Page extends \Soya{
         $this->parameter or $this->parameter = [
             $this->p    => 1,//默认使用第一页
         ];
-
-        \Soya\dump($_GET);
 
         $this->nowPage    = empty($_GET[$this->p]) ? 1 : intval($_GET[$this->p]);
         $this->nowPage    = $this->nowPage>0 ? $this->nowPage : 1;

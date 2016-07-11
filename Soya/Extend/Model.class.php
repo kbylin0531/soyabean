@@ -96,15 +96,10 @@ class Model {
     /**
      * Model constructor.
      * 单参数为非null时就指定了该表的数据库和字段,来对制定的表进行操作
-     * @param string $tablename 表的实际名称,不指定时候将使用类常量中定义的值
-     * @param string $fields 字段数组,不指定时候将使用类常量中定义的值
-     * @param string $order 用于指定默认排序
      * @throws Exception
      */
-    public function __construct($tablename=null,$fields=null,$order=null){
-        null === $tablename and $tablename = $this->tablename;
-        is_string($tablename) or Exception::throwing('Constant TABLE_NAME require to be string !');
-
+    public function __construct(){
+        $this->tablename or Exception::throwing('Constant TABLE_NAME require to be string !');
         $this->dao = Dao::getInstance();
         $this->reset([
             'table'     => $this->tablename,
@@ -166,6 +161,8 @@ class Model {
             'group'     => null,
             'order'     => null,
             'having'    => null,
+            'limit'     => null,
+            'offset'    => null,
         ];
         null !== $originOption and $origin = array_merge($origin,$originOption);
 
@@ -245,12 +242,15 @@ class Model {
     }
 
     /**
-     *
-     * @param $limit
-     * @param $offset
+     * 只针对mysql有效
+     * @param int $limit
+     * @param int $offset
+     * @return $this
      */
-    public function limit($limit,$offset){
-        //TODO:
+    public function limit($limit,$offset=null){
+        $this->_options['limit'] = $limit;
+        $this->_options['offset'] = $offset;
+        return $this;
     }
     /**
      * 设置当前要操作的数据的排列顺序
@@ -451,7 +451,7 @@ class Model {
      * 查询一条数据，依据逐渐，如果数据不存在时返回false
      * @param int|string|array|null $keys
      * @param bool $getall 是否获取全部数据
-     * @return bool|mixed
+     * @return false|array 发生错误时返回false
      */
     public function find($keys=null,$getall=false){
         if(null === $keys){
@@ -493,6 +493,15 @@ class Model {
             $this->_options['where'] and $sql .= ' WHERE '.$this->_options['where'];
             $this->_options['group'] and $sql .= ' GROUP BY '.$this->_options['group'];
             $this->_options['order'] and $sql .= ' ORDER BY '.$this->_options['order'];
+
+            //for mysql
+            if($this->_options['limit']){
+                if($this->_options['offset']){
+                    $sql .= ' LIMIT '.$this->_options['offset'].' , '.$this->_options['limit'];
+                }else{
+                    $sql .= ' LIMIT '.$this->_options['limit'];
+                }
+            }
 
             //set the input parameters
             if(isset($this->_inputs['fields'])) $inputs = $this->_inputs['fields'];

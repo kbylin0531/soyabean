@@ -51,7 +51,7 @@ class Wechat {
     }
 
     /**
-     * 检查签名
+     * 验证消息真实性
      * @return bool
      */
     public function checkSignature() {

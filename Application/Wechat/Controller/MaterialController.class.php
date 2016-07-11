@@ -9,7 +9,10 @@
 namespace Application\Wechat\Controller;
 use Application\System\Common\Library\HomeController;
 use Application\Wechat\Model\MaterialModel;
+use Application\Wechat\Model\TextMoterialModel;
 use Soya\Core\URI;
+use Soya\Extend\Page;
+use Soya\Extend\Session;
 use Soya\Util\SEK;
 
 /**
@@ -43,7 +46,7 @@ class MaterialController extends HomeController {
         $nav [] = $res;
 
         $res ['title'] = '文本素材';
-        $res ['url'] = URI::url ( 'textListsData' );
+        $res ['url'] = URI::url ( 'textLists' ,['id'=>1]);//TODO:
         $res ['class'] = stripos ( $act, 'text' ) !== false ? 'current' : '';
         $nav [] = $res;
         return $nav;
@@ -90,7 +93,29 @@ class MaterialController extends HomeController {
         $this->show();
     }
 
-    public function textLists(){
+    /**
+     * 获取文本列表
+     * @param int $id account_id
+     * @param int $page
+     */
+    public function textLists($id,$page=1){
+//        \Soya\dumpout($page) ;
+        if(!$id){
+            $id = Session::getInstance()->get('account_id');
+        }
+        $textModel = new TextMoterialModel($id);
+        $list = $textModel->getTextList((intval($page)-1)*10,10);//offset = 0,limit = 10
+        $this->assign('data_list',$list);
+        $total = $textModel->countTextList();
+
+        $page = (new Page($total,10,[
+            'page'  => $page,
+            'id'    => $id,
+        ]))->show('',true);
+        $this->assign('page',$page);
+        $this->show();
+    }
+    public function textAdd($id=null){
         $this->show();
     }
 
