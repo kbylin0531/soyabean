@@ -27,7 +27,7 @@ class File implements StorageInterface {
         'READABLE_SCOPE'    => PATH_BASE,
         'WRITABLE_SCOPE'    => PATH_RUNTIME,
 
-        'READOUT_MAX_SIZE'          => 2097152,//2M限制,对于文本文件已经足够
+        'READOUT_MAX_SIZE'  => 2097152,//2M限制,对于文本文件已经足够
         'OS_ECNODE'         => 'GB2312', // 文件系统编码格式,如果是英文环境下可能是UTF-8,GBK,GB2312以外的编码格式
         'READOUT_ENCODE'    => 'UTF-8', // 读出时转化的成的编码格式
         'WRITEIN_ENCODE'    => 'UTF-8', // 写入时转化的编码格式
@@ -70,15 +70,24 @@ class File implements StorageInterface {
      *
      * @param string $path 路径
      * @param bool $limiton 是否限制了访问范围
-     * @param string $scope 范围
+     * @param string|[] $scopes 范围
      * @return bool 表示是否可以访问
      */
-    private function checkAccessableWithRevise(&$path,$limiton,$scope){
+    private function checkAccessableWithRevise(&$path,$limiton,$scopes){
+        if(!$limiton or !$scopes) return true;
         $temp = dirname($path);//修改的目录
         $path = $this->toSystemEncode($path);
-        if(!$limiton or !$scope) return true;
-//        dumpout($temp,$scope,SEK::checkPathContainedInScope($temp,$scope));
-        return SEK::checkPathContainedInScope($temp,$scope);
+        if(is_string($scopes)){
+            $scopes = [$scopes];
+        }
+
+        foreach ($scopes as $scope){
+            if(SEK::checkPathContainedInScope($temp,$scope)){
+                return true;
+            }
+        }
+//        \Soya\dumpout($scopes,$temp);
+        return false;
     }
 
     /**
@@ -271,9 +280,8 @@ class File implements StorageInterface {
      * @return bool 文件夹已经存在的时候返回false,成功创建返回true
      */
     private function _makeDir($dirpath,$auth = 0755){
-
-//        dumpout(is_dir($dirpath),$this->toProgramEncode($dirpath),mkdir($dirpath,$auth,true));
-        return is_dir($dirpath)?false:mkdir($dirpath,$auth,true);
+//        \Soya\dumpout(is_dir($dirpath),$dirpath,mkdir($dirpath,$auth,true));
+        return is_dir($dirpath)?chmod($dirpath,$auth):mkdir($dirpath,$auth,true);
     }
 
     /**

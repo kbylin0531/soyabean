@@ -35,13 +35,6 @@ interface UploaderInterface {
     public function save($file, $replace=true);
 
     /**
-     * 创建目录
-     * @param  string $savepath 要创建的目录
-     * @return boolean          创建状态，true-成功，false-失败
-     */
-    public function mkdir($savepath);
-
-    /**
      * 获取最后一次上传错误信息
      * @return string 错误信息
      */

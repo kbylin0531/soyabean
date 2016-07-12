@@ -1,18 +1,20 @@
 <block name="header"></block>
 <div id="main-container" class="admin_container">
-    <div class="sidebar">
-        <ul class="sidenav">
-            <li class="snitem">
-                <a class="sidenav_parent" href="javascript:void(0);">
-                    <img src="">
-                    <span></span>
-                </a>
-                <ul class="sidenav_sub">
-                    <li class="snsubitem"><a><span></span></a><b class="active_arrow"></b></li>
-                </ul>
-            </li>
-        </ul>
-    </div>
+    <notempty name="sidebar">
+        <div class="sidebar">
+            <ul class="sidenav">
+                <li>
+                    <a href="javascript:void(0);">
+                        <img src="">
+                        <span></span>
+                    </a>
+                    <ul class="sidenav_sub">
+                        <li class="snsubitem"><a><span></span></a><b class="active_arrow"></b></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </notempty>
     <div class="main_body">
         <block name="body"></block>
     </div>

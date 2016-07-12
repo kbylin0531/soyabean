@@ -3,32 +3,49 @@
     <div class="span9 page_message">
         <section id="contents">
             <include file="/Wechat/View/Material/_nav.html"/>
-
             <div class="tab-content">
                 <!-- 表单 -->
-                <form id="form" action="http://182.61.39.187/weiphp3/index.php?s=/Home/Material/text_add.html"
-                      method="post" class="form-horizontal form-center">
+                <form id="form" method="post" class="form-horizontal form-center">
                     <div class="form-item cf toggle-content">
                         <label class="item-label">
                             <span class="need_flag">*</span> 文本内容 <span class="check-tips">
                                 </span></label>
                         <div class="controls">
                             <label class="textarea input-large">
-                                <textarea name="content"></textarea>
+                                <notempty name="content">
+                                    <textarea name="content">{$content}</textarea>
+                                <else />
+                                    <textarea name="content"></textarea>
+                                </notempty>
                             </label></div>
                         <br>
                     </div>
+                    <input type="hidden" name="id" value="{$id}">
+                    <notempty name="aid">
+                        <input type="hidden" name="aid" value="{$aid}">
+                    </notempty>
                 </form>
             </div>
             <div class="form-item form_bh">
-                <button class="btn submit-btn ajax-post" id="submit" type="submit" target-form="form-horizontal">确 定
+                <button class="btn submit-btn ajax-post" id="submit" type="button" >
+                    <notempty name="aid">
+                        修 改
+                        <else />
+                        添 加
+                    </notempty>
                 </button>
             </div>
-
         </section>
     </div>
 </block>
 <block name="script">
     <script type="text/javascript">
+        $(function () {
+            $("#submit").click(function () {
+                $.post('__ACTION__',$("#form").serialize(),function (data) {
+                    dazz.nav.tip(data['_msg']);
+                });
+            });
+        });
     </script>
 </block>

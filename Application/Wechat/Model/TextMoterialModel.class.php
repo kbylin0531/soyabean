@@ -29,31 +29,39 @@ class TextMoterialModel extends Model {
         return $this->fields([
             'aid'       => $this->accoutid,
             'content'   => $content,
+            'mtime'     => REQUEST_TIME,
         ])->create();
     }
+
     public function countTextList(){
         return $this->where('aid ='.$this->accoutid)->count();
     }
 
     /**
-     * 获取文本内容
-     * @param int $id
-     * @param mixed $replacement
-     * @return string|false 返回文本内容
+     * @param $id
      */
-    public function getTextList($offset=0,$limit=10,$id=null,$replacement=null){
+    public function getText($id){
         $aid = $this->accoutid;
-        if(!$id){
-            //获取全部
-            $result = $this->where(" aid = {$aid} ")->limit($limit,$offset)->select();
+        return $this->where(" id = {$id} and aid = {$aid} ")->find();
+    }
+
+    /**
+     * 获取文本内容
+     * @param int $offset
+     * @param int $limit
+     * @param string|null $search TODO:multi key
+     * @return array|bool
+     */
+    public function getTextList($offset=0,$limit=10,$search=null){
+        if($search){
+            $where = 'aid = '.$this->accoutid.' and content like \'%'.$search.'%\'';
         }else{
-            $id = intval($id);
-            $result = $this->where(" id = {$id} and aid = {$aid} ")->find();
+            $where = 'aid = '.$this->accoutid;
         }
+//        \Soya\dumpout($where);
+        $result = $this->where($where)->limit($limit,$offset)->order('mtime desc')->select();
         if(false === $result){
             return false;
-        }elseif(!$result){
-            return $replacement;
         }else{
             return $result;
         }
@@ -68,7 +76,9 @@ class TextMoterialModel extends Model {
     public function updateText($id,$content){
         $aid = $this->accoutid;
         $id = intval($id);
-        $result = $this->fields(['content'=> $content])->where(" id = {$id} and aid = {$aid} ")->update();
+        $result = $this->fields([
+            'content'=> $content,
+            'mtime'  => REQUEST_TIME,])->where(" id = {$id} and aid = {$aid} ")->update();
         if(false === $result){
             return false;
         }else{

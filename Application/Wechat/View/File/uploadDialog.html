@@ -1,4 +1,4 @@
-<include file="/Wechat/View/Base/Public/head"/>
+<include file="/Wechat/View/Base/Public/head.html"/>
 <body style="background:#fff; padding:40px 0;">
   <section id="uploadDialogContent">
   	<div class="upload_img_tab">
@@ -41,7 +41,7 @@ $('#upload_picture').uploadify({
 		if(data.status){
 			src = data.url || ROOT + data.path;
 			$addImg = $('<div class="upload-pre-item22 check" onclick="toggleCheck(this);"><img width="100" height="100" src="' + src + '"/>'
-				+'<input type="hidden" name="picId[]" value="'+data.id+'"/><!--<em onClick="if(confirm(\'确认删除？\')){ (this).parent().remove();}">&nbsp;</em>--><span class="ck-ico"></span></div>');
+				+'<input type="hidden" name="picId[]" value="'+data.id+'"/><span class="ck-ico"></span></div>');
 			$("#mutl_picture").append($addImg);
 			if(maxCount==1){
 				$("#mutl_picture .upload-pre-item22").each(function(index, element) {
@@ -110,8 +110,7 @@ function confirmImage(){
 			$addImg = $('<div class="upload-pre-item22"><img width="100" height="100" src="' + src + '"/>'
 				+'<input type="hidden" name="'+fieldName+'[]" value="'+picId+'"/><em onClick="if(confirm(\'确认删除？\')){ (this).parent().remove();}">&nbsp;</em></div>');
 			window.parent.$("#mutl_picture_"+fieldName).append($addImg);
-			
-			
+
 			window.parent.$("#mutl_picture_"+fieldName).dragsort('destroy');
 			window.parent.$("#mutl_picture_"+fieldName).dragsort({
 			    itemSelector: ".upload-pre-item22", dragSelector: ".upload-pre-item22", dragBetween: false, placeHolderTemplate: "<div class='upload-pre-item22'></div>",dragSelectorExclude:'em',dragEnd: function() { (".upload-pre-item22").attr('style','')}

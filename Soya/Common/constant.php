@@ -33,6 +33,7 @@ define('PATH_BASE', IS_WINDOWS?str_replace('\\','/',$_dir1234567689):$_dir123456
 const PATH_FRAMEWORK= PATH_BASE.'Soya/';
 const PATH_CONFIG   = PATH_FRAMEWORK.'Config/';
 const PATH_RUNTIME  = PATH_BASE.'Runtime/';
+const PATH_PUBLIC  = PATH_BASE.'Public/';
 
 const SINGLE_INSTANCE = false;
 const JUST_INIT = false;

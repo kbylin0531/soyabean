@@ -6,16 +6,14 @@
             <div class="table-bar">
                 <div class="fl">
                     <div class="tools">
-                        <a class="btn" >新 增</a>
-                        <button class="btn ajax-post confirm" >删 除</button>
+                        <a class="btn" href="__CONTROLLER__/textAdd?id={$id}"><i class="fa fa-plus"></i> 新 增</a>
                     </div>
                 </div>
                 <!-- 高级搜索 -->
                 <div class="search-form fr cf">
                     <div class="sleft">
-                        <input type="text" name="" class="search-input" value="" placeholder="">
-                        <a class="sch-btn" href="javascript:;" id="search" url=""><i
-                                class="btn-search"></i></a></div>
+                        <input type="text" id="search_input" class="search-input" value="{$search}" placeholder="">
+                        <a class="sch-btn" href="javascript:void(0);" id="search" ><i class="fa fa-search"></i></a></div>
                 </div>
             </div>
             <!-- 数据列表 -->
@@ -25,10 +23,6 @@
                         <!-- 表头 -->
                         <thead>
                         <tr>
-                            <th class="row-selected row-selected">
-                                <input autocomplete="off" type="checkbox" id="checkAll"
-                                       class="check-all regular-checkbox">
-                                <label for="checkAll"></label></th>
                             <th width="20%">编号</th>
                             <th width="60%">文本内容</th>
                             <th width="20%">操作</th>
@@ -38,14 +32,12 @@
                         <!-- 列表 -->
                         <tbody>
                         <volist name="data_list" id="data">
-                            <tr>
-                                <td><input autocomplete="off" class="ids regular-checkbox" type="checkbox" >
-                                    <label></label></td>
+                            <tr class="data-{$data.id}">
                                 <td>{$data.id}</td>
                                 <td>{$data.content}</td>
                                 <td>
-                                    <a target="_self" href="">编辑</a>
-                                    <a target="_self" href="">删除</a>
+                                    <a target="_self" href="__CONTROLLER__/textEdit?id={$data.id}&aid={$id}">编辑</a>
+                                    <a target="_self" href="javascript:del('{$data.id}');">删除</a>
                                 </td>
                             </tr>
                         </volist>
@@ -53,11 +45,25 @@
                     </table>
                 </div>
             </div>
-            {$page}
+            <div class="page">{$page}</div>
         </section>
     </div>
 </block>
 <block name="script">
     <script type="text/javascript">
+        var aid = "{$id}";
+        $(function () {
+            $("#search").click(function () {
+                location.href = '__ACTION__?id='+aid+'&search='+encodeURI($("#search_input").val().trim());
+            });
+        });
+        function del(id) {
+            $.post('__CONTROLLER__/textRemove',{aid:aid,id:id},function (data) {
+                if(parseInt(data['_type'])){
+                    $(".data-"+id).remove();
+                }
+                dazz.nav.tip(data['_msg']);
+            })
+        }
     </script>
 </block>

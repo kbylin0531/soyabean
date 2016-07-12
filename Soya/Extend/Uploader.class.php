@@ -16,23 +16,23 @@ class Uploader extends \Soya{
 
     const CONF_NAME = 'uploader';
     const CONF_CONVENTION = [
-
         'PRIOR_INDEX' => 0,//默认驱动ID，类型限定为int或者string
-        'DRIVER_CLASS_LIST' => [],//驱动类的列表
+        'DRIVER_CLASS_LIST' => [
+            'Soya\\Extend\\Uploader\\Local',
+        ],//驱动类的列表
         'DRIVER_CONFIG_LIST' => [],//驱动类列表参数
 
         'mimes'         =>  [], //允许上传的文件MiMe类型
         'maxSize'       =>  0, //上传的文件大小限制 (0-不做限制)
         'exts'          =>  [], //允许上传的文件后缀
         'autoSub'       =>  true, //自动子目录保存文件
-        'subName'       =>  ['date', 'Y-m-d'], //子目录创建方式，[0]-函数名，[1]-参数，多个参数使用数组
-        'rootPath'      =>  './Uploads/', //保存根路径
-        'savePath'      =>  '', //保存路径
+        'subName'       =>  null, //子目录创建方式，[0]-函数名，[1]-参数，多个参数使用数组
+        'rootPath'      =>  PATH_BASE.'Public/upload/', //保存根路径
+        'savePath'      =>  '/', //保存路径
         'saveName'      =>  ['uniqid', ''], //上传文件命名规则，[0]-函数名，[1]-参数，多个参数使用数组
         'saveExt'       =>  '', //文件保存后缀，空则使用原后缀
         'replace'       =>  false, //存在同名是否覆盖
         'hash'          =>  true, //是否生成hash编码
-        'callback'      =>  false, //检测文件是否存在回调，如果存在返回文件信息数组
         'driver'        =>  '', // 文件上传驱动
         'driverConfig'  =>  [], // 上传驱动配置
         'FILE_UPLOAD_TYPE'      =>  'Local',    // 文件上传方式
@@ -80,9 +80,6 @@ class Uploader extends \Soya{
         }
     }
 
-    public function __isset($name){
-        return isset($this->config[$name]);
-    }
 
     /**
      * 获取最后一次上传错误信息
@@ -98,18 +95,20 @@ class Uploader extends \Soya{
      * @return array        上传成功后的文件信息
      */
     public function uploadOne($file){
-        $info = $this->upload(array($file));
+        $info = $this->upload([$file]);
         return $info ? $info[0] : $info;
     }
 
     /**
      * 上传文件
-     * @param array $files 文件信息数组，通常是 $_FILES数组
+     *  文件信息数组，通常是 $_FILES数组
+     *
+     * @param string|null $upload_path file upload path,oppside to 'rootPath'
      * @return array|bool
      */
-    public function upload($files=[]) {
-        $files or $files = $_FILES;
-        if(empty($files)){
+    public function upload($upload_path=null) {
+        $files = $_FILES;
+        if(!$files){
             $this->error = '没有上传的文件！';
             return false;
         }
@@ -121,25 +120,29 @@ class Uploader extends \Soya{
         }
 
         /* 检查上传目录 */
-        if(!$this->_driver->checkSavePath($this->config['savePath'])){
+        if($upload_path) $this->config['savePath'] = trim($upload_path,'/\\').'/';
+        $savepath = $this->config['rootPath'].$this->config['savePath'];
+        if(!$this->_driver->checkSavePath($savepath)){
             $this->error = $this->_driver->getError();
             return false;
         }
 
         /* 逐个检测并上传文件 */
-        $info    =  array();
+        $info   = [];;
+        $finfo  = null;
         if(function_exists('finfo_open')){
             $finfo   =  finfo_open ( FILEINFO_MIME_TYPE );
         }
+//        \Soya\dumpout($finfo,$files);
         // 对上传文件数组信息处理
         $files   =  $this->dealFiles($files);
         foreach ($files as $key => $file) {
             $file['name']  = strip_tags($file['name']);
+//            \Soya\dumpout($savepath);
+            $file['savepath'] = $savepath;
             if(!isset($file['key']))   $file['key']    =   $key;
             /* 通过扩展获取文件类型，可解决FLASH上传$FILES数组返回文件类型错误的问题 */
-            if(isset($finfo)){
-                $file['type']   =   finfo_file ( $finfo ,  $file['tmp_name'] );
-            }
+            $finfo and $file['type']   =   finfo_file ( $finfo ,  $file['tmp_name'] );
 
             /* 获取上传文件后缀，允许上传无后缀文件 */
             $file['ext']    =   pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -155,31 +158,12 @@ class Uploader extends \Soya{
                 $file['sha1'] = sha1_file($file['tmp_name']);
             }
 
-            /* 调用回调函数检测文件是否存在 */
-            $data = call_user_func($this->config['callback'], $file);
-            if( $this->config['callback'] && $data ){
-                if ( file_exists('.'.$data['path'])  ) {
-                    $info[$key] = $data;
-                    continue;
-                }elseif($this->config['removeTrash']){
-                    call_user_func($this->config['removeTrash'],$data);//删除垃圾据
-                }
-            }
-
             /* 生成保存文件名 */
             $savename = $this->getSaveName($file);
             if(false == $savename){
                 continue;
             } else {
                 $file['savename'] = $savename;
-            }
-
-            /* 检测并创建子目录 */
-            $subpath = $this->getSubPath($file['name']);
-            if(false === $subpath){
-                continue;
-            } else {
-                $file['savepath'] = $this->config['savePath'] . $subpath;
             }
 
             /* 对图像文件进行严格检测 */
@@ -200,27 +184,42 @@ class Uploader extends \Soya{
                 $this->error = $this->_driver->getError();
             }
         }
-        if(isset($finfo)){
-            finfo_close($finfo);
+        $finfo and finfo_close($finfo);
+        if(!empty($info['download'])){
+//            \Soya\dumpout($info['download']['savepath'],PATH_PUBLIC,strpos($savepath,PATH_PUBLIC));
+            if(strpos($savepath,PATH_PUBLIC) === 0){
+                $info['download']['savepath'] = substr($savepath,strlen(PATH_PUBLIC)-1);
+            }
+            // the url whose cound be access
+            $info['download']['access_url'] = __PUBLIC__.$info['download']['savepath'].$info['download']['savename'];
         }
         return empty($info) ? false : $info;
     }
 
     /**
      * 转换上传文件数组变量为正确的方式
+     * <template>
+     * array (
+     *  'name' => '21.gif',
+     *  'type' => 'application/octet-stream',
+     *  'tmp_name' => '/tmp/phpwJyyVm',
+     *  'error' => 0,
+     *  'size' => 1119,
+     * ),
+     * </template>
      * @access private
      * @param array $files  上传的文件变量
      * @return array
      */
     private function dealFiles($files) {
-        $fileArray  = array();
+        $fileArray  = [];
         $n          = 0;
-        foreach ($files as $key=>$file){
+        foreach ($files as $index=>$file){
             if(is_array($file['name'])) {
                 $keys       =   array_keys($file);
                 $count      =   count($file['name']);
                 for ($i=0; $i<$count; $i++) {
-                    $fileArray[$n]['key'] = $key;
+                    $fileArray[$n]['key'] = $index;
                     foreach ($keys as $_key){
                         $fileArray[$n][$_key] = $file[$_key][$i];
                     }
@@ -361,25 +360,6 @@ class Uploader extends \Soya{
         $ext = empty($this->config['saveExt']) ? $file['ext'] : $this->config['saveExt'];
 
         return $savename . '.' . $ext;
-    }
-
-    /**
-     * 获取子目录的名称
-     * @param array $filename  上传的文件信息
-     * @return bool|string
-     */
-    private function getSubPath($filename) {
-        $subpath = '';
-        $rule    = $this->config['subName'];
-        if ($this->config['autoSub'] && !empty($rule)) {
-            $subpath = $this->getName($rule, $filename) . '/';
-
-            if(!empty($subpath) && !$this->_driver->mkdir($this->config['savePath'] . $subpath)){
-                $this->error = $this->_driver->getError();
-                return false;
-            }
-        }
-        return $subpath;
     }
 
     /**

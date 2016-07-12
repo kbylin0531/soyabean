@@ -578,7 +578,7 @@ function initUploadImg(opts){
 	$(".upload-img-view").dragsort({
 	    itemSelector: ".upload-pre-item22", dragSelector: ".upload-pre-item22", dragBetween: false, placeHolderTemplate: "<div class='upload-pre-item22'></div>",dragSelectorExclude:'em',dragEnd: function() {$(".upload-pre-item22").attr('style','')}
 	});
-	$uploadDom = $('.uploadrow2');
+	var $uploadDom = $('.uploadrow2');
 	if(opts && opts.uploadDom){
 		$uploadDom = opts.uploadDom;
 	}
@@ -586,7 +586,6 @@ function initUploadImg(opts){
 		$(obj).click(function(){
 			uploadImgDialog(obj,opts);
 		});
-		
 	});
 	
 }
@@ -595,8 +594,6 @@ function uploadImgDialog(obj,opts){
 	var field = $(obj).attr('rel');
 	$uploadHtml = '<div><div class="upload_dialog" style="height:520px;overflow-y:hidden;overflow-x:hidden;"><div><iframe id="goodsIframe" name="goodsIframe" style="height:520px;width:100%; border:none" border="0" src="'+UPLOAD_DIALOG_URL+'&max='+maxCount+'&field='+field+'"></iframe></div></div></div>';
 	$.Dialog.open("上传图片",{width:800,height:560},$uploadHtml);
-	
-	
 }
 //上传附件组件
 function initUploadFile(callback){
@@ -849,8 +846,8 @@ function simpleColorPicker(_this,callback){
 	}
 	function initCopyBtn(id){
 		var copyClient = new ZeroClipboard( document.getElementById(id) );
-		copyClient.on( "ready", function( readyEvent ) {
-		  copyClient.on( "aftercopy", function( event ) {
+		copyClient.on( "ready", function(  ) {
+		  copyClient.on( "aftercopy", function(  ) {
 			updateAlert('复制成功!,请粘贴使用','alert-success');
 		  } );
 		} );
