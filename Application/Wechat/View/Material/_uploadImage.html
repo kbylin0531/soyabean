@@ -1,0 +1,91 @@
+<html>
+<head>
+    <include file="/Wechat/View/Base/Public/head.html"/>
+</head>
+<body style="background:#fff; padding:40px 0;">
+<section id="uploadDialogContent">
+    <!--<div class="upload_img_tab">-->
+        <!--<a class="current" href="javascript:void(0);" onClick="switchTab(this,1);">本地上传</a>-->
+        <!--<a href="javascript:void(0);" onClick="switchTab(this,2);">系统图标</a>-->
+        <!--<a href="javascript:void(0);" onClick="switchTab(this,3);">最近上传</a>-->
+    <!--</div>-->
+    <div class="tab_content" id="tab1" style="padding:20px; display:block">
+        <form id="form" method="post" class="form-horizontal form-center">
+            <div class="mult_imgs">
+                <div class="upload-img-view" id='mutl_picture'></div>
+                <div class="controls uploadrow2" data-max="9" title="点击上传图片">
+                    <input type="file" id="upload_picture">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="tab_content load_piclist_box" id="tab2" style="padding:20px;"></div>
+    <div class="tab_content load_piclist_box" id="tab3" style="padding:20px;"></div>
+</section>
+<div class="upload_dialog_bar">
+    <a class="btn" href="javascript:void(0);" onClick="confirmImage();">确定</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    <a class="border-btn" href="javascript:void(0);" onClick="window.parent.$.Dialog.close();">取消</a>
+</div>
+</body>
+<script>
+    function switchTab(a, index) {
+        $('#tab' + index).show().siblings('.tab_content').hide();
+        $(a).addClass('current').siblings().removeClass('current');
+        if (index != 1 && !$(a).hasClass('loaded')) {
+            if (index == 2) {
+                //加载系统
+                $(a).addClass('loaded');
+//                $('#tab2').load("{ ('/Home/File/systemPics',array('dir'=>$dir))}");
+            } else if (index == 3) {
+                //加载最近
+                $(a).addClass('loaded');
+//                $('#tab3').load("{ ('/Home/File/userPics')}");
+            }
+        }
+    }
+
+    $(function () {
+        //click to upload
+        $('#upload_picture').uploadify({
+            "height"          : 100,
+            "width"           : 100,
+            "swf"             : "__STATIC__/uploadify/uploadify.swf",
+            "fileObjName"     : "download",
+            "buttonText"      : "上传图片",
+            "uploader"        : '__ROOT__/Wechat/File/uploadPicture',
+            'cancelImg'		  : 'JS/jquery.uploadify-v2.1.0/cancel.png',
+            'removeTimeout'	  : 1,
+            'fileTypeExts'	  : '*.jpg; *.png; *.gif;',
+            "onUploadSuccess" : function(file, data) {
+                data = $.parseJSON(data);
+                var maxCount = 0; //image max num
+//                if(data.status){
+                data.id = 1;
+                var $addImg = $(
+                        '<div class="upload-pre-item22 check" onclick="$(this).toggleClass(\'check\');">'+
+                            '<img width="100" height="100" src="' + data['access_url'] + '"/>'+
+                            '<input type="hidden" name="picId[]" value="'+data.id+'"/>'+
+                            '<span class="ck-ico"></span>'+
+                        '</div>');
+                var mutl_picture = $("#mutl_picture").append($addImg);
+                if(maxCount==1){
+                    mutl_picture.find(".upload-pre-item22").each(function(index, element) {
+                        $(element).removeClass('check');
+                    });
+                    $addImg.addClass('check');
+                }
+//                } else {
+//                    window.parent.updateAlert(data.info);
+//                    setTimeout(function(){
+//                        window.parent.$('#top-alert').find('button').click();
+//                    },1500);
+//                }
+            },
+            "onUploadError" : function(file, data) {
+                window.parent.updateAlert(data.info);
+            }
+        });
+    });
+
+</script>
+</html>

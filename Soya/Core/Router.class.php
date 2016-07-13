@@ -7,6 +7,7 @@
  */
 
 namespace Soya\Core;
+use Soya\Util\SEK;
 
 /**
  * Class Router
@@ -49,7 +50,7 @@ class Router extends \Soya{
      * @return array|null|string
      */
     public function parse($pathinfo=null){
-        $pathinfo or $pathinfo = $_SERVER['PATH_INFO'];
+        $pathinfo or $pathinfo = SEK::getPathInfo(true);
 
         //静态路由
         if($this->config['STATIC_ROUTE_ON'] and $this->config['STATIC_ROUTE_RULES']){

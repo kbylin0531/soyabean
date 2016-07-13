@@ -1,0 +1,96 @@
+<extend file="/Wechat/View/Base/common.html"/>
+<block name="body">
+    <div class="span9 page_message">
+        <section id="contents">
+            <include file="/Wechat/View/Material/_nav.html"/>
+
+            <!-- 数据列表 -->
+            <div class="data-table" style="margin-top:20px;">
+                <div class="table-striped">
+                    <div style="padding-bottom: 20px;padding-left: 15px;">
+                        <a class="btn" href="">一键上传素材到微信素材库</a>
+                        <a class="btn" href="">一键下载微信素材库到本地</a>
+                    </div>
+
+                    <ul class="picture_list">
+                        <li>
+                            <div class="controls uploadrow2" data-max="1" title="点击修改图片" id="clicktoupload" rel="p_cover"
+                                 style="width:210px">
+                                <input type="file" id="upload_picture_p_cover">
+                                <input type="hidden" name="p_cover" id="cover_id_p_cover"
+                                       value=""/>
+                                <div class="upload-img-box" rel="img" style="display:none">
+                                    <div class="upload-pre-item2"><img width="100" height="100" src=""/></div>
+                                    <em class="edit_img_icon">&nbsp;</em>
+                                </div>
+                            </div>
+                        </li>
+                        <volist name="list_data" id="vo">
+                            <li>
+                                <div class="picture_item">
+                                    <div class="main_img">
+                                        <a href="" target="_blank"><img src="{$vo.src}"/></a>
+                                    </div>
+                                    <div class="picture_action">
+                                        <a href="javascript:void(0);" data-clipboard-text="{$vo['wechat_url']}"
+                                           id="picture_{$vo['id']}">复制链接</a>
+                                        <a href="javascript:void(0);" onclick="del('{$vo.id}', this)">删除</a>
+                                    </div>
+                                    <script type="application/javascript">
+                                        $.WeiPHP.initCopyBtn('picture_{$vo.id}');
+                                    </script>
+                                </div>
+                            </li>
+                        </volist>
+                    </ul>
+                </div>
+            </div>
+            <div class="page">{$page}</div>
+        </section>
+    </div>
+</block>
+<block name="script">
+    <script type="text/javascript">
+        //上传图片组件
+        function initUploadImg() {
+            $(".upload-img-view").dragsort({
+                itemSelector: ".upload-pre-item22",
+                dragSelector: ".upload-pre-item22",
+                dragBetween: false,
+                placeHolderTemplate: "<div class='upload-pre-item22'></div>",
+                dragSelectorExclude: 'em',
+                dragEnd: function () {
+                    $(".upload-pre-item22").attr('style', '')
+                }
+            });
+            var $uploadDom = $('.uploadrow2');
+            $uploadDom.each(function (index, obj) {
+                $(obj).click(function () {
+                    uploadImgDialog();
+                });
+            });
+        }
+
+        function uploadImgDialog() {
+            var $uploadHtml = '<div>' +
+                    '<div class="upload_dialog" style="height:520px;overflow-y:hidden;overflow-x:hidden;"><div>' +
+                    '<iframe id="goodsIframe" name="goodsIframe" style="height:520px;width:100%; border:none" src="__CONTROLLER__/_uploadImage"></iframe>' +
+                    '</div></div></div>';
+            $.Dialog.open("上传图片", {width: 800, height: 560}, $uploadHtml);
+        }
+
+        $(function () {
+
+            $("#clicktoupload").click(function () {
+                initUploadImg();
+            });
+
+
+        });
+        function del(id, _this) {
+            if (!confirm('确认删除？')) return false;
+            $(_this).parents('li').remove();
+            $.post("__CONTROLLER__/imageRemove", {id: id});
+        }
+    </script>
+</block>

@@ -15,6 +15,7 @@ use Soya\Core\URI;
 use Soya\Extend\Page;
 use Soya\Extend\Response;
 use Soya\Extend\Session;
+use Soya\Extend\Uploader;
 use Soya\Util\SEK;
 
 /**
@@ -33,7 +34,7 @@ class MaterialController extends HomeController {
         $nav [] = $res;
 
         $res ['titletext'] = '图片素材';
-        $res ['url'] = URI::url ( 'pictureLists',['aid'=>$aid] );
+        $res ['url'] = URI::url ( 'imageLists',['aid'=>$aid] );
         $res ['class'] = stripos ( $act, 'picture' ) !== false ? 'current' : '';
         $nav [] = $res;
 
@@ -91,7 +92,7 @@ class MaterialController extends HomeController {
         $this->show();
     }
 
-    public function pictureLists($aid,$page=1){
+    public function imageLists($aid,$page=1){
         $model = new ImageMaterialModel($aid);
         $list = $model->selectImage((intval($page)-1)*10,10);
         $page = (new Page($model->countImage(),10,[
@@ -101,6 +102,27 @@ class MaterialController extends HomeController {
         $this->assign('page',$page);
         $this->assign ( 'list_data',  $list );
         $this->assign('aid',$aid);
+        $this->show();
+    }
+
+    public function imageAdd(){
+        /* 返回标准数据 */
+        $return  = array('status' => 1, 'info' => '上传成功', 'data' => '');
+
+        /* 调用文件上传组件上传文件 */
+        $Picture = new Uploader();
+        $info = $Picture->upload('/wechat/image');
+
+        /* 记录图片信息 */
+        if($info){
+            $return['status'] = 1;
+            $return = array_merge($info['download'], $return);
+        } else {
+            $return['status'] = 0;
+            $return['info']   = $Picture->getError();
+        }
+    }
+    public function _uploadImage(){
         $this->show();
     }
 

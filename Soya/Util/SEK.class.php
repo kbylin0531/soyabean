@@ -340,6 +340,39 @@ final class SEK {
     }
 
     /**
+     * 自动从运行环境中获取URI
+     * 直接访问：
+     *  http://www.xor.com:8056/                => '/'
+     *  http://localhost:8056/_xor/             => '/_xor/'  ****** BUG *******
+     * @param bool $reget 是否重新获取，默认为false
+     * @return null|string
+     */
+    public static function getPathInfo($reget=false){
+        static $uri = '/';
+        if($reget or '/' === $uri){
+            if(isset($_SERVER['PATH_INFO'])){
+                //如果设置了PATH_INFO则直接获取之
+                $uri = $_SERVER['PATH_INFO'];
+            }else{
+                $scriptlen = strlen($_SERVER['SCRIPT_NAME']);
+                if(strlen($_SERVER['REQUEST_URI']) > $scriptlen){
+                    $pos = strpos($_SERVER['REQUEST_URI'],$_SERVER['SCRIPT_NAME']);
+                    if(false !== $pos){
+                        //在不支持PATH_INFO...或者PATH_INFO不存在的情况下(URL省略将被认定为普通模式)
+                        //REQUEST_URI获取原生的URL地址进行解析(返回脚本名称后面的部分)
+                        if(0 === $pos){//PATHINFO模式
+                            $uri = substr($_SERVER['REQUEST_URI'], $scriptlen);
+                        }else{
+                            //重写模式
+                            $uri = $_SERVER['REQUEST_URI'];
+                        }
+                    }
+                }else{}//URI短于SCRIPT_NAME，则PATH_INFO等于'/'
+            }
+        }
+        return $uri;
+    }
+    /**
      * 数组递归遍历
      * @param array $array 待递归调用的数组
      * @param callable $filter 遍历毁掉函数

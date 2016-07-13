@@ -27,15 +27,13 @@ class MenuModel extends Model{
     public function createSidedMenu(array $info){
         $data = [
             'title' => null,
-            'value' => '',
             'icon'  => null,
-//            'order' => null,//结构由顶级菜单决定，暂时弃用
             'status'    => null,
             'create_time'   => time(),
         ];
         is_array($info['value']) and $info['value'] = @serialize($info['value']);
         SEK::merge($data,$info);
-        SEK::filter($data,[null,false]);
+        SEK::filter($data,[null,false,'']);
         return $this->fields($data)->create();
     }
 
